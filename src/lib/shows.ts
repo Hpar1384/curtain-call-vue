@@ -3,6 +3,15 @@ import posterSeller from "@/assets/poster-seller.jpg";
 import posterRhinoceros from "@/assets/poster-rhinoceros.jpg";
 import posterVeil from "@/assets/poster-veil.jpg";
 
+export type Session = {
+  id: string;
+  /** Persian formatted date, e.g. ۲۸ مرداد */
+  date: string;
+  /** Weekday label, e.g. جمعه */
+  weekday: string;
+  time: string;
+};
+
 export type Show = {
   id: string;
   title: string;
@@ -17,6 +26,7 @@ export type Show = {
   availableSeats: number;
   director: string;
   genre: string;
+  sessions: Session[];
 };
 
 export const shows: Show[] = [
@@ -35,6 +45,12 @@ export const shows: Show[] = [
     availableSeats: 42,
     director: "داریوش مهرجویی",
     genre: "تراژدی",
+    sessions: [
+      { id: "h1", date: "۲۸ مرداد", weekday: "چهارشنبه", time: "۲۰:۳۰" },
+      { id: "h2", date: "۲۹ مرداد", weekday: "پنجشنبه", time: "۱۸:۰۰" },
+      { id: "h3", date: "۲۹ مرداد", weekday: "پنجشنبه", time: "۲۱:۰۰" },
+      { id: "h4", date: "۳۰ مرداد", weekday: "جمعه", time: "۲۰:۳۰" },
+    ],
   },
   {
     id: "seller",
@@ -51,6 +67,11 @@ export const shows: Show[] = [
     availableSeats: 12,
     director: "علی رفیعی",
     genre: "درام",
+    sessions: [
+      { id: "s1", date: "۳ شهریور", weekday: "شنبه", time: "۱۹:۰۰" },
+      { id: "s2", date: "۴ شهریور", weekday: "یکشنبه", time: "۱۹:۰۰" },
+      { id: "s3", date: "۵ شهریور", weekday: "دوشنبه", time: "۲۱:۰۰" },
+    ],
   },
   {
     id: "rhinoceros",
@@ -67,6 +88,10 @@ export const shows: Show[] = [
     availableSeats: 0,
     director: "محمدعلی باسطی",
     genre: "آبسورد",
+    sessions: [
+      { id: "r1", date: "۱۱ شهریور", weekday: "یکشنبه", time: "۱۸:۰۰" },
+      { id: "r2", date: "۱۲ شهریور", weekday: "دوشنبه", time: "۱۸:۰۰" },
+    ],
   },
   {
     id: "veil",
@@ -83,6 +108,11 @@ export const shows: Show[] = [
     availableSeats: 88,
     director: "کیومرث پوراحمد",
     genre: "تاریخی",
+    sessions: [
+      { id: "v1", date: "۱۹ شهریور", weekday: "دوشنبه", time: "۲۱:۰۰" },
+      { id: "v2", date: "۲۰ شهریور", weekday: "سه‌شنبه", time: "۲۱:۰۰" },
+      { id: "v3", date: "۲۲ شهریور", weekday: "پنجشنبه", time: "۱۹:۰۰" },
+    ],
   },
 ];
 
@@ -93,6 +123,10 @@ export function getShows(): Show[] {
 
 export function getShowById(id: string): Show | undefined {
   return shows.find((s) => s.id === id);
+}
+
+export function getSession(show: Show, sessionId: string): Session | undefined {
+  return show.sessions.find((s) => s.id === sessionId);
 }
 
 export const MIN_TICKETS = 1;
