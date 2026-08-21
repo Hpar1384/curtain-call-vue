@@ -1,0 +1,27 @@
+{
+  "name": "TheaterReserve — رزرو بلیت تئاتر",
+  "short_name": "TheaterReserve",
+  "description": "اپلیکیشن رزرو بلیت تئاتر",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12101c",
+  "theme_color": "#12101c",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
