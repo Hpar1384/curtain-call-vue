@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getShows } from "@/lib/shows";
 import { ShowCard } from "@/components/ShowCard";
+import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,12 +44,14 @@ function Index() {
         <h2 className="text-sm font-bold text-muted-foreground">
           نمایش‌های در حال اجرا
         </h2>
-        <div className="mt-3 flex flex-col gap-3 pb-10">
+        <div className="mt-3 flex flex-col gap-3 pb-28">
           {shows.map((show) => (
             <ShowCard key={show.id} show={show} />
           ))}
         </div>
       </section>
+
+      <BottomNav />
     </div>
   );
 }

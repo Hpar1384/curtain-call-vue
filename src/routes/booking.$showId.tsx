@@ -1,22 +1,20 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  MAX_TICKETS,
-  MIN_TICKETS,
   formatPrice,
+  getSession,
   getShowById,
   toPersianNumber,
 } from "@/lib/shows";
+import { bookingStore } from "@/lib/bookings";
 import { AppScreen, BackIcon, backButtonClass } from "@/components/AppScreen";
+import { PrimaryButton, StickyBar } from "@/components/StickyBar";
 
 export const Route = createFileRoute("/booking/$showId")({
-  validateSearch: (search: Record<string, unknown>) => {
-    const raw = Number(search["qty"]);
-    const qty = Number.isFinite(raw)
-      ? Math.min(MAX_TICKETS, Math.max(MIN_TICKETS, Math.trunc(raw)))
-      : MIN_TICKETS;
-    return { qty };
-  },
+  validateSearch: (search: Record<string, unknown>) => ({
+    session: typeof search["session"] === "string" ? search["session"] : "",
+    seats: typeof search["seats"] === "string" ? search["seats"] : "",
+  }),
   loader: ({ params }) => {
     const show = getShowById(params.showId);
     if (!show) throw notFound();
@@ -31,12 +29,12 @@ export const Route = createFileRoute("/booking/$showId")({
       },
       {
         name: "description",
-        content: "خلاصهٔ رزرو بلیت تئاتر: نمایش، سانس، سالن، تعداد بلیت و مبلغ کل.",
+        content: "خلاصهٔ رزرو بلیت تئاتر: نمایش، سانس، سالن، صندلی‌ها و مبلغ کل.",
       },
       { property: "og:title", content: "خلاصهٔ رزرو | TheaterReserve" },
       {
         property: "og:description",
-        content: "خلاصهٔ رزرو بلیت تئاتر پیش از پرداخت.",
+        content: "خلاصهٔ رزرو بلیت تئاتر پیش از تأیید.",
       },
       { property: "og:type", content: "website" },
       { name: "robots", content: "noindex" },
@@ -47,17 +45,40 @@ export const Route = createFileRoute("/booking/$showId")({
 
 function BookingSummary() {
   const { show } = Route.useLoaderData();
-  const { qty } = Route.useSearch();
-  const [confirmed, setConfirmed] = useState(false);
-  const total = show.price * qty;
+  const { session: sessionParam, seats: seatsParam } = Route.useSearch();
+  const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+
+  const session = getSession(show, sessionParam) ?? show.sessions[0]!;
+  const seats = seatsParam.split(",").filter(Boolean);
+  const total = show.price * seats.length;
+
+  const confirm = () => {
+    if (saving || seats.length === 0) return;
+    setSaving(true);
+    bookingStore.add({
+      showId: show.id,
+      showTitle: show.title,
+      poster: show.poster,
+      venue: show.venue,
+      date: session.date,
+      weekday: session.weekday,
+      time: session.time,
+      seats,
+      unitPrice: show.price,
+      total,
+    });
+    navigate({ to: "/tickets" });
+  };
 
   return (
     <AppScreen
       title="خلاصهٔ رزرو"
       back={
         <Link
-          to="/shows/$id"
-          params={{ id: show.id }}
+          to="/seats/$showId"
+          params={{ showId: show.id }}
+          search={{ session: session.id }}
           aria-label="بازگشت"
           className={backButtonClass}
         >
@@ -81,37 +102,24 @@ function BookingSummary() {
             </h2>
             <p className="mt-1 text-xs text-muted-foreground">{show.venue}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {show.date} · {show.time}
+              {session.weekday} {session.date} · {session.time}
             </p>
           </div>
         </div>
 
         <div className="divide-y divide-border rounded-2xl bg-card px-4">
-          <Row label="تعداد بلیت" value={`${toPersianNumber(qty)} عدد`} />
+          <Row label="صندلی‌ها" value={seats.join("، ") || "—"} />
+          <Row label="تعداد بلیت" value={`${toPersianNumber(seats.length)} عدد`} />
           <Row label="قیمت هر بلیت" value={`${formatPrice(show.price)} تومان`} />
-          <Row
-            label="مبلغ کل"
-            value={`${formatPrice(total)} تومان`}
-            highlight
-          />
+          <Row label="مبلغ کل" value={`${formatPrice(total)} تومان`} highlight />
         </div>
-
-        {confirmed && (
-          <p className="rounded-2xl bg-gold-soft px-4 py-3 text-center text-sm font-bold text-gold">
-            رزرو شما ثبت شد. پرداخت در فاز بعدی فعال می‌شود.
-          </p>
-        )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-t border-border bg-background/95 px-5 py-4 backdrop-blur-xl">
-        <button
-          type="button"
-          onClick={() => setConfirmed(true)}
-          className="h-14 w-full rounded-2xl bg-primary text-base font-extrabold text-primary-foreground transition-transform active:scale-[0.98]"
-        >
+      <StickyBar>
+        <PrimaryButton disabled={seats.length === 0 || saving} onClick={confirm}>
           تأیید رزرو
-        </button>
-      </div>
+        </PrimaryButton>
+      </StickyBar>
     </AppScreen>
   );
 }
@@ -126,11 +134,12 @@ function Row({
   highlight?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between py-3.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="flex items-center justify-between gap-3 py-3.5 text-sm">
+      <span className="shrink-0 text-muted-foreground">{label}</span>
       <span
         className={
-          highlight ? "font-extrabold text-gold" : "font-bold text-foreground"
+          "truncate " +
+          (highlight ? "font-extrabold text-gold" : "font-bold text-foreground")
         }
       >
         {value}
