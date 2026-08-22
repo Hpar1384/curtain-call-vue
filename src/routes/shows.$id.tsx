@@ -1,14 +1,9 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  MAX_TICKETS,
-  MIN_TICKETS,
-  formatPrice,
-  getShowById,
-  toPersianNumber,
-} from "@/lib/shows";
+import { formatPrice, getShowById, toPersianNumber } from "@/lib/shows";
 import { AppScreen, BackIcon, backButtonClass } from "@/components/AppScreen";
-import { QuantityStepper } from "@/components/QuantityStepper";
+import { SessionPicker } from "@/components/SessionPicker";
+import { PrimaryButton, StickyBar } from "@/components/StickyBar";
 
 export const Route = createFileRoute("/shows/$id")({
   loader: ({ params }) => {
@@ -42,10 +37,8 @@ export const Route = createFileRoute("/shows/$id")({
 function ShowDetail() {
   const { show } = Route.useLoaderData();
   const navigate = useNavigate();
-  const [quantity, setQuantity] = useState(MIN_TICKETS);
   const soldOut = show.availableSeats === 0;
-  const max = Math.min(MAX_TICKETS, show.availableSeats || MIN_TICKETS);
-  const total = show.price * quantity;
+  const [sessionId, setSessionId] = useState(show.sessions[0]!.id);
 
   return (
     <AppScreen
@@ -61,92 +54,55 @@ function ShowDetail() {
         alt={`پوستر نمایش ${show.title}`}
         width={768}
         height={1024}
-        className="h-64 w-full object-cover"
+        className="h-60 w-full object-cover"
       />
 
-      <div className="space-y-5 px-5 pb-40 pt-5">
+      <div className="space-y-5 px-5 pb-32 pt-5">
         <div>
           <h2 className="text-xl font-extrabold text-foreground">{show.title}</h2>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {show.venue} · {show.duration} · {show.ageRating}
+          </p>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {show.description}
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <Fact label="تاریخ" value={show.date} />
-          <Fact label="ساعت" value={show.time} />
-          <Fact label="مدت" value={show.duration} />
-          <Fact label="رده سنی" value={show.ageRating} />
-          <Fact label="سالن" value={show.venue} wide />
+        <div className="space-y-2">
+          <p className="text-sm font-bold text-foreground">انتخاب سانس</p>
+          <SessionPicker
+            sessions={show.sessions}
+            value={sessionId}
+            onChange={setSessionId}
+          />
         </div>
 
-        <div className="rounded-2xl bg-card px-4 py-3 text-sm">
-          <span className="text-muted-foreground">صندلی باقی‌مانده: </span>
-          <span className="font-bold text-foreground">
-            {soldOut ? "تکمیل ظرفیت" : toPersianNumber(show.availableSeats)}
+        <div className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 text-sm">
+          <span className="text-muted-foreground">
+            {soldOut
+              ? "تکمیل ظرفیت"
+              : `${toPersianNumber(show.availableSeats)} صندلی آزاد`}
+          </span>
+          <span className="font-extrabold text-gold">
+            {formatPrice(show.price)} تومان
           </span>
         </div>
-
-        {!soldOut && (
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-foreground">تعداد بلیت</p>
-            <QuantityStepper
-              value={quantity}
-              min={MIN_TICKETS}
-              max={max}
-              onChange={setQuantity}
-            />
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">قیمت هر بلیت</span>
-              <span className="text-foreground">
-                {formatPrice(show.price)} تومان
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-base font-extrabold">
-              <span className="text-foreground">مبلغ قابل پرداخت</span>
-              <span className="text-gold">{formatPrice(total)} تومان</span>
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-t border-border bg-background/95 px-5 py-4 backdrop-blur-xl">
-        <button
-          type="button"
+      <StickyBar>
+        <PrimaryButton
           disabled={soldOut}
           onClick={() =>
             navigate({
-              to: "/booking/$showId",
+              to: "/seats/$showId",
               params: { showId: show.id },
-              search: { qty: quantity },
+              search: { session: sessionId },
             })
           }
-          className="h-14 w-full rounded-2xl bg-primary text-base font-extrabold text-primary-foreground transition-transform active:scale-[0.98] disabled:bg-muted disabled:text-muted-foreground"
         >
-          {soldOut ? "تکمیل ظرفیت" : "ادامه رزرو"}
-        </button>
-      </div>
+          {soldOut ? "تکمیل ظرفیت" : "انتخاب صندلی"}
+        </PrimaryButton>
+      </StickyBar>
     </AppScreen>
-  );
-}
-
-function Fact({
-  label,
-  value,
-  wide,
-}: {
-  label: string;
-  value: string;
-  wide?: boolean;
-}) {
-  return (
-    <div
-      className={
-        "rounded-2xl bg-card px-4 py-3 " + (wide ? "col-span-2" : "")
-      }
-    >
-      <p className="text-[11px] text-muted-foreground">{label}</p>
-      <p className="mt-1 truncate text-sm font-bold text-foreground">{value}</p>
-    </div>
   );
 }
