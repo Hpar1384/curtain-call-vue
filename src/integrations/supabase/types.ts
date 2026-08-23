@@ -14,7 +14,323 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      booking_items: {
+        Row: {
+          booking_id: string
+          created_at: string
+          id: string
+          show_seat_id: string
+          unit_price: number
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          id?: string
+          show_seat_id: string
+          unit_price?: number
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          id?: string
+          show_seat_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_items_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_items_show_seat_id_fkey"
+            columns: ["show_seat_id"]
+            isOneToOne: false
+            referencedRelation: "show_seats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          created_at: string
+          guest_name: string | null
+          guest_phone: string | null
+          id: string
+          seat_count: number
+          session_id: string
+          show_id: string
+          status: string
+          total_price: number
+        }
+        Insert: {
+          created_at?: string
+          guest_name?: string | null
+          guest_phone?: string | null
+          id?: string
+          seat_count?: number
+          session_id: string
+          show_id: string
+          status?: string
+          total_price?: number
+        }
+        Update: {
+          created_at?: string
+          guest_name?: string | null
+          guest_phone?: string | null
+          id?: string
+          seat_count?: number
+          session_id?: string
+          show_id?: string
+          status?: string
+          total_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "show_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_show_id_fkey"
+            columns: ["show_id"]
+            isOneToOne: false
+            referencedRelation: "shows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      halls: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          rows_count: number
+          seats_per_row: number
+          theater_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          rows_count?: number
+          seats_per_row?: number
+          theater_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          rows_count?: number
+          seats_per_row?: number
+          theater_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "halls_theater_id_fkey"
+            columns: ["theater_id"]
+            isOneToOne: false
+            referencedRelation: "theaters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seats: {
+        Row: {
+          created_at: string
+          hall_id: string
+          id: string
+          row_label: string
+          seat_number: number
+        }
+        Insert: {
+          created_at?: string
+          hall_id: string
+          id?: string
+          row_label: string
+          seat_number: number
+        }
+        Update: {
+          created_at?: string
+          hall_id?: string
+          id?: string
+          row_label?: string
+          seat_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seats_hall_id_fkey"
+            columns: ["hall_id"]
+            isOneToOne: false
+            referencedRelation: "halls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      show_seats: {
+        Row: {
+          created_at: string
+          id: string
+          price: number | null
+          seat_id: string
+          session_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          price?: number | null
+          seat_id: string
+          session_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          price?: number | null
+          seat_id?: string
+          session_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "show_seats_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "seats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "show_seats_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "show_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      show_sessions: {
+        Row: {
+          created_at: string
+          date_label: string
+          id: string
+          show_id: string
+          sort_order: number
+          starts_at: string | null
+          time_label: string
+          weekday_label: string
+        }
+        Insert: {
+          created_at?: string
+          date_label: string
+          id?: string
+          show_id: string
+          sort_order?: number
+          starts_at?: string | null
+          time_label: string
+          weekday_label: string
+        }
+        Update: {
+          created_at?: string
+          date_label?: string
+          id?: string
+          show_id?: string
+          sort_order?: number
+          starts_at?: string | null
+          time_label?: string
+          weekday_label?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "show_sessions_show_id_fkey"
+            columns: ["show_id"]
+            isOneToOne: false
+            referencedRelation: "shows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shows: {
+        Row: {
+          age_rating: string | null
+          created_at: string
+          description: string
+          director: string | null
+          duration_minutes: number
+          genre: string | null
+          hall_id: string
+          id: string
+          poster_key: string
+          price: number
+          slug: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          age_rating?: string | null
+          created_at?: string
+          description?: string
+          director?: string | null
+          duration_minutes?: number
+          genre?: string | null
+          hall_id: string
+          id?: string
+          poster_key: string
+          price?: number
+          slug: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          age_rating?: string | null
+          created_at?: string
+          description?: string
+          director?: string | null
+          duration_minutes?: number
+          genre?: string | null
+          hall_id?: string
+          id?: string
+          poster_key?: string
+          price?: number
+          slug?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shows_hall_id_fkey"
+            columns: ["hall_id"]
+            isOneToOne: false
+            referencedRelation: "halls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theaters: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          city?: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
