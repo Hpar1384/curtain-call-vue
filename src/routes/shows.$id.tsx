@@ -1,16 +1,34 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { formatPrice, getShowById, toPersianNumber } from "@/lib/shows";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { getShow } from "@/lib/catalog.functions";
+import { formatPrice, toPersianNumber, toShow } from "@/lib/shows";
 import { AppScreen, BackIcon, backButtonClass } from "@/components/AppScreen";
 import { SessionPicker } from "@/components/SessionPicker";
 import { PrimaryButton, StickyBar } from "@/components/StickyBar";
 
+export const showQueryOptions = (slug: string) =>
+  queryOptions({
+    queryKey: ["show", slug],
+    queryFn: () => getShow({ data: { slug } }),
+  });
+
 export const Route = createFileRoute("/shows/$id")({
-  loader: ({ params }) => {
-    const show = getShowById(params.id);
+  loader: async ({ params, context }) => {
+    const show = await context.queryClient.ensureQueryData(
+      showQueryOptions(params.id),
+    );
     if (!show) throw notFound();
-    return { show };
+    return { title: show.title, description: show.description };
   },
+  errorComponent: ({ error }) => (
+    <div role="alert" className="p-6 text-sm text-muted-foreground">
+      خطا در دریافت نمایش: {error.message}
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="p-6 text-sm text-muted-foreground">نمایش یافت نشد.</div>
+  ),
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
@@ -20,14 +38,14 @@ export const Route = createFileRoute("/shows/$id")({
         ],
       };
     }
-    const { show } = loaderData;
     return {
       meta: [
-        { title: `${show.title} | TheaterReserve` },
-        { name: "description", content: show.description },
-        { property: "og:title", content: `${show.title} | TheaterReserve` },
-        { property: "og:description", content: show.description },
+        { title: `${loaderData.title} | TheaterReserve` },
+        { name: "description", content: loaderData.description },
+        { property: "og:title", content: `${loaderData.title} | TheaterReserve` },
+        { property: "og:description", content: loaderData.description },
         { property: "og:type", content: "article" },
+        { name: "twitter:card", content: "summary_large_image" },
       ],
     };
   },
@@ -35,10 +53,12 @@ export const Route = createFileRoute("/shows/$id")({
 });
 
 function ShowDetail() {
-  const { show } = Route.useLoaderData();
+  const { id } = Route.useParams();
+  const { data } = useSuspenseQuery(showQueryOptions(id));
   const navigate = useNavigate();
+  const show = toShow(data!);
   const soldOut = show.availableSeats === 0;
-  const [sessionId, setSessionId] = useState(show.sessions[0]!.id);
+  const [sessionId, setSessionId] = useState(show.sessions[0]?.id ?? "");
 
   return (
     <AppScreen
