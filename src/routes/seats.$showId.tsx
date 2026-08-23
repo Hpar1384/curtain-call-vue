@@ -1,20 +1,44 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { formatPrice, getSession, getShowById, toPersianNumber } from "@/lib/shows";
-import { MAX_SEATS, getSeatMap } from "@/lib/seats";
+import { useState } from "react";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { getSeatMap, getShow } from "@/lib/catalog.functions";
+import { formatPrice, getSession, toPersianNumber, toShow } from "@/lib/shows";
+import { MAX_SEATS } from "@/lib/seats";
 import { AppScreen, BackIcon, backButtonClass } from "@/components/AppScreen";
 import { SeatMap } from "@/components/SeatMap";
 import { PrimaryButton, StickyBar } from "@/components/StickyBar";
+
+const showQueryOptions = (slug: string) =>
+  queryOptions({
+    queryKey: ["show", slug],
+    queryFn: () => getShow({ data: { slug } }),
+  });
+
+const seatsQueryOptions = (sessionId: string) =>
+  queryOptions({
+    queryKey: ["seats", sessionId],
+    queryFn: () => getSeatMap({ data: { sessionId } }),
+    enabled: sessionId !== "",
+  });
 
 export const Route = createFileRoute("/seats/$showId")({
   validateSearch: (search: Record<string, unknown>) => ({
     session: typeof search["session"] === "string" ? search["session"] : "",
   }),
-  loader: ({ params }) => {
-    const show = getShowById(params.showId);
+  loader: async ({ params, context }) => {
+    const show = await context.queryClient.ensureQueryData(
+      showQueryOptions(params.showId),
+    );
     if (!show) throw notFound();
-    return { show };
   },
+  errorComponent: ({ error }) => (
+    <div role="alert" className="p-6 text-sm text-muted-foreground">
+      خطا در دریافت صندلی‌ها: {error.message}
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="p-6 text-sm text-muted-foreground">نمایش یافت نشد.</div>
+  ),
   head: () => ({
     meta: [
       { title: "انتخاب صندلی | TheaterReserve" },
@@ -25,6 +49,7 @@ export const Route = createFileRoute("/seats/$showId")({
       { property: "og:title", content: "انتخاب صندلی | TheaterReserve" },
       { property: "og:description", content: "انتخاب صندلی برای رزرو بلیت تئاتر." },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -32,15 +57,14 @@ export const Route = createFileRoute("/seats/$showId")({
 });
 
 function SeatsScreen() {
-  const { show } = Route.useLoaderData();
+  const { showId } = Route.useParams();
   const { session: sessionParam } = Route.useSearch();
+  const { data } = useSuspenseQuery(showQueryOptions(showId));
   const navigate = useNavigate();
 
+  const show = toShow(data!);
   const session = getSession(show, sessionParam) ?? show.sessions[0]!;
-  const seats = useMemo(
-    () => getSeatMap(show.id, session.id),
-    [show.id, session.id],
-  );
+  const { data: seats } = useSuspenseQuery(seatsQueryOptions(session.id));
   const [selected, setSelected] = useState<string[]>([]);
 
   const toggle = (id: string) =>
