@@ -1,9 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getShows } from "@/lib/shows";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { listShows } from "@/lib/catalog.functions";
+import { toShow } from "@/lib/shows";
 import { ShowCard } from "@/components/ShowCard";
 import { BottomNav } from "@/components/BottomNav";
 
+const showsQueryOptions = queryOptions({
+  queryKey: ["shows"],
+  queryFn: () => listShows(),
+});
+
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => {
+    void context.queryClient.ensureQueryData(showsQueryOptions);
+  },
+  errorComponent: ({ error }) => (
+    <div role="alert" className="p-6 text-sm text-muted-foreground">
+      خطا در دریافت نمایش‌ها: {error.message}
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="p-6 text-sm text-muted-foreground">نمایشی یافت نشد.</div>
+  ),
   head: () => ({
     meta: [
       { title: "TheaterReserve | رزرو بلیت تئاتر" },
@@ -18,13 +36,15 @@ export const Route = createFileRoute("/")({
         content: "نمایش‌های در حال اجرا را ببین و در چند ثانیه بلیت بگیر.",
       },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,
 });
 
 function Index() {
-  const shows = getShows();
+  const { data } = useSuspenseQuery(showsQueryOptions);
+  const shows = data.map(toShow);
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background">
