@@ -48,13 +48,14 @@ export const bookingStore = {
   getAll(): Booking[] {
     return read();
   },
-  add(booking: Omit<Booking, "id" | "createdAt">): Booking {
+  add(booking: Omit<Booking, "id" | "createdAt"> & { id?: string }): Booking {
     const full: Booking = {
       ...booking,
-      id: `${booking.showId}-${Date.now()}`,
+      id: booking.id ?? `${booking.showId}-${Date.now()}`,
       createdAt: Date.now(),
     };
     write([full, ...read()]);
     return full;
   },
+
 };
