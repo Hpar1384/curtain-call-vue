@@ -1,32 +1,46 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { createBooking, getShow } from "@/lib/catalog.functions";
 import {
   formatPrice,
   getSession,
-  getShowById,
   toPersianNumber,
+  toShow,
 } from "@/lib/shows";
 import { bookingStore } from "@/lib/bookings";
 import { AppScreen, BackIcon, backButtonClass } from "@/components/AppScreen";
 import { PrimaryButton, StickyBar } from "@/components/StickyBar";
+
+const showQueryOptions = (slug: string) =>
+  queryOptions({
+    queryKey: ["show", slug],
+    queryFn: () => getShow({ data: { slug } }),
+  });
 
 export const Route = createFileRoute("/booking/$showId")({
   validateSearch: (search: Record<string, unknown>) => ({
     session: typeof search["session"] === "string" ? search["session"] : "",
     seats: typeof search["seats"] === "string" ? search["seats"] : "",
   }),
-  loader: ({ params }) => {
-    const show = getShowById(params.showId);
+  loader: async ({ params, context }) => {
+    const show = await context.queryClient.ensureQueryData(
+      showQueryOptions(params.showId),
+    );
     if (!show) throw notFound();
-    return { show };
   },
-  head: ({ loaderData }) => ({
+  errorComponent: ({ error }) => (
+    <div role="alert" className="p-6 text-sm text-muted-foreground">
+      خطا در دریافت اطلاعات رزرو: {error.message}
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="p-6 text-sm text-muted-foreground">نمایش یافت نشد.</div>
+  ),
+  head: () => ({
     meta: [
-      {
-        title: loaderData
-          ? `رزرو ${loaderData.show.title} | TheaterReserve`
-          : "رزرو | TheaterReserve",
-      },
+      { title: "خلاصهٔ رزرو | TheaterReserve" },
       {
         name: "description",
         content: "خلاصهٔ رزرو بلیت تئاتر: نمایش، سانس، سالن، صندلی‌ها و مبلغ کل.",
@@ -37,6 +51,7 @@ export const Route = createFileRoute("/booking/$showId")({
         content: "خلاصهٔ رزرو بلیت تئاتر پیش از تأیید.",
       },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -44,32 +59,48 @@ export const Route = createFileRoute("/booking/$showId")({
 });
 
 function BookingSummary() {
-  const { show } = Route.useLoaderData();
+  const { showId } = Route.useParams();
   const { session: sessionParam, seats: seatsParam } = Route.useSearch();
+  const { data } = useSuspenseQuery(showQueryOptions(showId));
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
+  const show = toShow(data!);
   const session = getSession(show, sessionParam) ?? show.sessions[0]!;
   const seats = seatsParam.split(",").filter(Boolean);
   const total = show.price * seats.length;
 
-  const confirm = () => {
+  const confirm = async () => {
     if (saving || seats.length === 0) return;
     setSaving(true);
-    bookingStore.add({
-      showId: show.id,
-      showTitle: show.title,
-      poster: show.poster,
-      venue: show.venue,
-      date: session.date,
-      weekday: session.weekday,
-      time: session.time,
-      seats,
-      unitPrice: show.price,
-      total,
-    });
-    navigate({ to: "/tickets" });
+    try {
+      const result = await createBooking({
+        data: { slug: show.id, sessionId: session.id, seatIds: seats },
+      });
+      bookingStore.add({
+        id: result.bookingId,
+        showId: show.id,
+        showTitle: show.title,
+        poster: show.poster,
+        venue: show.venue,
+        date: session.date,
+        weekday: session.weekday,
+        time: session.time,
+        seats,
+        unitPrice: show.price,
+        total: result.total,
+      });
+      await queryClient.invalidateQueries({ queryKey: ["seats", session.id] });
+      navigate({ to: "/tickets" });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "ثبت رزرو ناموفق بود",
+      );
+      setSaving(false);
+    }
   };
+
 
   return (
     <AppScreen
