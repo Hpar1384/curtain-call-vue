@@ -47,7 +47,7 @@ export type Database = {
           {
             foreignKeyName: "booking_items_show_seat_id_fkey"
             columns: ["show_seat_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "show_seats"
             referencedColumns: ["id"]
           },
@@ -64,6 +64,7 @@ export type Database = {
           show_id: string
           status: string
           total_price: number
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -75,6 +76,7 @@ export type Database = {
           show_id: string
           status?: string
           total_price?: number
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -86,6 +88,7 @@ export type Database = {
           show_id?: string
           status?: string
           total_price?: number
+          user_id?: string
         }
         Relationships: [
           {
@@ -336,7 +339,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_booking: {
+        Args: { p_seat_labels: string[]; p_session_id: string; p_slug: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
