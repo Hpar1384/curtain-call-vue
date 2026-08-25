@@ -1,10 +1,25 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSyncExternalStore } from "react";
-import { bookingStore } from "@/lib/bookings";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { listMyBookings } from "@/lib/booking.functions";
 import { formatPrice, toPersianNumber } from "@/lib/shows";
+import { posterFor, statusLabel } from "@/lib/booking-ui";
 import { BottomNav } from "@/components/BottomNav";
 
-export const Route = createFileRoute("/tickets")({
+const bookingsQueryOptions = queryOptions({
+  queryKey: ["my-bookings"],
+  queryFn: () => listMyBookings(),
+});
+
+export const Route = createFileRoute("/_authenticated/tickets")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(bookingsQueryOptions),
+  errorComponent: ({ error }) => (
+    <div role="alert" className="p-6 text-sm text-muted-foreground">
+      خطا در دریافت بلیت‌ها: {error.message}
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="p-6 text-sm text-muted-foreground">چیزی یافت نشد.</div>
+  ),
   head: () => ({
     meta: [
       { title: "بلیت‌های من | TheaterReserve" },
@@ -13,22 +28,16 @@ export const Route = createFileRoute("/tickets")({
         content: "بلیت‌های رزروشدهٔ تئاتر خود را ببین: نمایش، سانس و صندلی‌ها.",
       },
       { property: "og:title", content: "بلیت‌های من | TheaterReserve" },
-      {
-        property: "og:description",
-        content: "فهرست بلیت‌های رزروشدهٔ تئاتر.",
-      },
+      { property: "og:description", content: "فهرست بلیت‌های رزروشدهٔ تئاتر." },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: TicketsScreen,
 });
 
 function TicketsScreen() {
-  const bookings = useSyncExternalStore(
-    bookingStore.subscribe,
-    bookingStore.getAll,
-    () => [],
-  );
+  const { data: bookings } = useSuspenseQuery(bookingsQueryOptions);
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background">
@@ -51,9 +60,14 @@ function TicketsScreen() {
           </div>
         ) : (
           bookings.map((b) => (
-            <article key={b.id} className="flex gap-3 rounded-2xl bg-card p-3">
+            <Link
+              key={b.id}
+              to="/confirmation/$bookingId"
+              params={{ bookingId: b.id }}
+              className="flex gap-3 rounded-2xl bg-card p-3 transition-colors hover:bg-card/70"
+            >
               <img
-                src={b.poster}
+                src={posterFor(b.posterKey)}
                 alt={`پوستر نمایش ${b.showTitle}`}
                 loading="lazy"
                 className="h-24 w-16 rounded-xl object-cover"
@@ -70,14 +84,17 @@ function TicketsScreen() {
                 </p>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="rounded-full bg-gold-soft px-2.5 py-1 text-[11px] font-bold text-gold">
-                    {toPersianNumber(b.seats.length)} بلیت
+                    {statusLabel(b.status)}
                   </span>
                   <span className="text-sm font-extrabold text-gold">
                     {formatPrice(b.total)} تومان
                   </span>
                 </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {toPersianNumber(b.seats.length)} بلیت
+                </p>
               </div>
-            </article>
+            </Link>
           ))
         )}
       </div>

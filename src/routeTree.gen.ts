@@ -10,26 +10,38 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as TicketsRouteImport } from './routes/tickets'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedTicketsRouteImport } from './routes/_authenticated/tickets'
 import { Route as BookingShowIdRouteImport } from './routes/booking.$showId'
 import { Route as SeatsShowIdRouteImport } from './routes/seats.$showId'
 import { Route as ShowsIdRouteImport } from './routes/shows.$id'
+import { Route as AuthenticatedConfirmationBookingIdRouteImport } from './routes/_authenticated/confirmation.$bookingId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TicketsRoute = TicketsRouteImport.update({
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTicketsRoute = AuthenticatedTicketsRouteImport.update({
   id: '/tickets',
   path: '/tickets',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const BookingShowIdRoute = BookingShowIdRouteImport.update({
   id: '/booking/$showId',
@@ -46,63 +58,83 @@ const ShowsIdRoute = ShowsIdRouteImport.update({
   path: '/shows/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedConfirmationBookingIdRoute =
+  AuthenticatedConfirmationBookingIdRouteImport.update({
+    id: '/confirmation/$bookingId',
+    path: '/confirmation/$bookingId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/profile': typeof ProfileRoute
-  '/tickets': typeof TicketsRoute
+  '/auth': typeof AuthRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/tickets': typeof AuthenticatedTicketsRoute
   '/booking/$showId': typeof BookingShowIdRoute
   '/seats/$showId': typeof SeatsShowIdRoute
   '/shows/$id': typeof ShowsIdRoute
+  '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/profile': typeof ProfileRoute
-  '/tickets': typeof TicketsRoute
+  '/auth': typeof AuthRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/tickets': typeof AuthenticatedTicketsRoute
   '/booking/$showId': typeof BookingShowIdRoute
   '/seats/$showId': typeof SeatsShowIdRoute
   '/shows/$id': typeof ShowsIdRoute
+  '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/profile': typeof ProfileRoute
-  '/tickets': typeof TicketsRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/tickets': typeof AuthenticatedTicketsRoute
   '/booking/$showId': typeof BookingShowIdRoute
   '/seats/$showId': typeof SeatsShowIdRoute
   '/shows/$id': typeof ShowsIdRoute
+  '/_authenticated/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/profile'
     | '/tickets'
     | '/booking/$showId'
     | '/seats/$showId'
     | '/shows/$id'
+    | '/confirmation/$bookingId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/profile'
     | '/tickets'
     | '/booking/$showId'
     | '/seats/$showId'
     | '/shows/$id'
+    | '/confirmation/$bookingId'
   id:
     | '__root__'
     | '/'
-    | '/profile'
-    | '/tickets'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/profile'
+    | '/_authenticated/tickets'
     | '/booking/$showId'
     | '/seats/$showId'
     | '/shows/$id'
+    | '/_authenticated/confirmation/$bookingId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ProfileRoute: typeof ProfileRoute
-  TicketsRoute: typeof TicketsRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   BookingShowIdRoute: typeof BookingShowIdRoute
   SeatsShowIdRoute: typeof SeatsShowIdRoute
   ShowsIdRoute: typeof ShowsIdRoute
@@ -117,19 +149,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tickets': {
-      id: '/tickets'
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tickets': {
+      id: '/_authenticated/tickets'
       path: '/tickets'
       fullPath: '/tickets'
-      preLoaderRoute: typeof TicketsRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedTicketsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/booking/$showId': {
       id: '/booking/$showId'
@@ -152,13 +198,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShowsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/confirmation/$bookingId': {
+      id: '/_authenticated/confirmation/$bookingId'
+      path: '/confirmation/$bookingId'
+      fullPath: '/confirmation/$bookingId'
+      preLoaderRoute: typeof AuthenticatedConfirmationBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedTicketsRoute: typeof AuthenticatedTicketsRoute
+  AuthenticatedConfirmationBookingIdRoute: typeof AuthenticatedConfirmationBookingIdRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedTicketsRoute: AuthenticatedTicketsRoute,
+  AuthenticatedConfirmationBookingIdRoute:
+    AuthenticatedConfirmationBookingIdRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ProfileRoute: ProfileRoute,
-  TicketsRoute: TicketsRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   BookingShowIdRoute: BookingShowIdRoute,
   SeatsShowIdRoute: SeatsShowIdRoute,
   ShowsIdRoute: ShowsIdRoute,

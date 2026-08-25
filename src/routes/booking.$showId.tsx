@@ -2,16 +2,18 @@ import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-ro
 import { useState } from "react";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createBooking, getShow } from "@/lib/catalog.functions";
+import { getShow } from "@/lib/catalog.functions";
+import { createBooking } from "@/lib/booking.functions";
+import { useAuth } from "@/hooks/use-auth";
 import {
   formatPrice,
   getSession,
   toPersianNumber,
   toShow,
 } from "@/lib/shows";
-import { bookingStore } from "@/lib/bookings";
 import { AppScreen, BackIcon, backButtonClass } from "@/components/AppScreen";
 import { PrimaryButton, StickyBar } from "@/components/StickyBar";
+
 
 const showQueryOptions = (slug: string) =>
   queryOptions({
@@ -64,6 +66,7 @@ function BookingSummary() {
   const { data } = useSuspenseQuery(showQueryOptions(showId));
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isAuthenticated, loading } = useAuth();
   const [saving, setSaving] = useState(false);
 
   const show = toShow(data!);
@@ -73,26 +76,25 @@ function BookingSummary() {
 
   const confirm = async () => {
     if (saving || seats.length === 0) return;
+    if (!loading && !isAuthenticated) {
+      toast.info("برای تکمیل رزرو وارد حساب کاربری شوید.");
+      navigate({
+        to: "/auth",
+        search: { redirect: window.location.pathname + window.location.search },
+      });
+      return;
+    }
     setSaving(true);
     try {
       const result = await createBooking({
         data: { slug: show.id, sessionId: session.id, seatIds: seats },
       });
-      bookingStore.add({
-        id: result.bookingId,
-        showId: show.id,
-        showTitle: show.title,
-        poster: show.poster,
-        venue: show.venue,
-        date: session.date,
-        weekday: session.weekday,
-        time: session.time,
-        seats,
-        unitPrice: show.price,
-        total: result.total,
-      });
       await queryClient.invalidateQueries({ queryKey: ["seats", session.id] });
-      navigate({ to: "/tickets" });
+      await queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
+      navigate({
+        to: "/confirmation/$bookingId",
+        params: { bookingId: result.bookingId },
+      });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "ثبت رزرو ناموفق بود",
@@ -100,6 +102,7 @@ function BookingSummary() {
       setSaving(false);
     }
   };
+
 
 
   return (

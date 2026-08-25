@@ -29,3 +29,18 @@ export type SeatDTO = {
   number: number;
   status: "free" | "reserved";
 };
+
+export type BookingDTO = {
+  id: string;
+  showSlug: string;
+  showTitle: string;
+  posterKey: string;
+  venue: string;
+  date: string;
+  weekday: string;
+  time: string;
+  seats: string[];
+  total: number;
+  status: "pending" | "confirmed" | "cancelled";
+  createdAt: string;
+};
