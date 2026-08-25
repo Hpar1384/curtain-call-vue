@@ -2,16 +2,18 @@ import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-ro
 import { useState } from "react";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createBooking, getShow } from "@/lib/catalog.functions";
+import { getShow } from "@/lib/catalog.functions";
+import { createBooking } from "@/lib/booking.functions";
+import { useAuth } from "@/hooks/use-auth";
 import {
   formatPrice,
   getSession,
   toPersianNumber,
   toShow,
 } from "@/lib/shows";
-import { bookingStore } from "@/lib/bookings";
 import { AppScreen, BackIcon, backButtonClass } from "@/components/AppScreen";
 import { PrimaryButton, StickyBar } from "@/components/StickyBar";
+
 
 const showQueryOptions = (slug: string) =>
   queryOptions({
