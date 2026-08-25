@@ -49,7 +49,7 @@ function ProfileScreen() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", search: { redirect: "" }, replace: true });
   };
 
   return (
