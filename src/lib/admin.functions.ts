@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type {
@@ -9,10 +11,12 @@ import type {
   AdminStats,
 } from "@/lib/admin-types";
 
-async function assertAdmin(context: {
-  supabase: { rpc: (fn: "has_role", args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
+type AdminContext = {
+  supabase: SupabaseClient<Database>;
   userId: string;
-}) {
+};
+
+async function assertAdmin(context: AdminContext) {
   const { data, error } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",

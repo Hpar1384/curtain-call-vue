@@ -12,11 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedTicketsRouteImport } from './routes/_authenticated/tickets'
 import { Route as BookingShowIdRouteImport } from './routes/booking.$showId'
 import { Route as SeatsShowIdRouteImport } from './routes/seats.$showId'
 import { Route as ShowsIdRouteImport } from './routes/shows.$id'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminBookingsRouteImport } from './routes/_authenticated/admin.bookings'
+import { Route as AuthenticatedAdminHallsRouteImport } from './routes/_authenticated/admin.halls'
+import { Route as AuthenticatedAdminSessionsRouteImport } from './routes/_authenticated/admin.sessions'
+import { Route as AuthenticatedAdminShowsRouteImport } from './routes/_authenticated/admin.shows'
 import { Route as AuthenticatedConfirmationBookingIdRouteImport } from './routes/_authenticated/confirmation.$bookingId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -32,6 +38,11 @@ const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
@@ -58,6 +69,33 @@ const ShowsIdRoute = ShowsIdRouteImport.update({
   path: '/shows/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminBookingsRoute =
+  AuthenticatedAdminBookingsRouteImport.update({
+    id: '/bookings',
+    path: '/bookings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminHallsRoute = AuthenticatedAdminHallsRouteImport.update({
+  id: '/halls',
+  path: '/halls',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminSessionsRoute =
+  AuthenticatedAdminSessionsRouteImport.update({
+    id: '/sessions',
+    path: '/sessions',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminShowsRoute = AuthenticatedAdminShowsRouteImport.update({
+  id: '/shows',
+  path: '/shows',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedConfirmationBookingIdRoute =
   AuthenticatedConfirmationBookingIdRouteImport.update({
     id: '/confirmation/$bookingId',
@@ -68,12 +106,18 @@ const AuthenticatedConfirmationBookingIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/tickets': typeof AuthenticatedTicketsRoute
   '/booking/$showId': typeof BookingShowIdRoute
   '/seats/$showId': typeof SeatsShowIdRoute
   '/shows/$id': typeof ShowsIdRoute
+  '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/admin/halls': typeof AuthenticatedAdminHallsRoute
+  '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
+  '/admin/shows': typeof AuthenticatedAdminShowsRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,31 +127,48 @@ export interface FileRoutesByTo {
   '/booking/$showId': typeof BookingShowIdRoute
   '/seats/$showId': typeof SeatsShowIdRoute
   '/shows/$id': typeof ShowsIdRoute
+  '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/admin/halls': typeof AuthenticatedAdminHallsRoute
+  '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
+  '/admin/shows': typeof AuthenticatedAdminShowsRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/tickets': typeof AuthenticatedTicketsRoute
   '/booking/$showId': typeof BookingShowIdRoute
   '/seats/$showId': typeof SeatsShowIdRoute
   '/shows/$id': typeof ShowsIdRoute
+  '/_authenticated/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/_authenticated/admin/halls': typeof AuthenticatedAdminHallsRoute
+  '/_authenticated/admin/sessions': typeof AuthenticatedAdminSessionsRoute
+  '/_authenticated/admin/shows': typeof AuthenticatedAdminShowsRoute
   '/_authenticated/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/admin'
     | '/profile'
     | '/tickets'
     | '/booking/$showId'
     | '/seats/$showId'
     | '/shows/$id'
+    | '/admin/bookings'
+    | '/admin/halls'
+    | '/admin/sessions'
+    | '/admin/shows'
     | '/confirmation/$bookingId'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,18 +178,29 @@ export interface FileRouteTypes {
     | '/booking/$showId'
     | '/seats/$showId'
     | '/shows/$id'
+    | '/admin/bookings'
+    | '/admin/halls'
+    | '/admin/sessions'
+    | '/admin/shows'
     | '/confirmation/$bookingId'
+    | '/admin'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/admin'
     | '/_authenticated/profile'
     | '/_authenticated/tickets'
     | '/booking/$showId'
     | '/seats/$showId'
     | '/shows/$id'
+    | '/_authenticated/admin/bookings'
+    | '/_authenticated/admin/halls'
+    | '/_authenticated/admin/sessions'
+    | '/_authenticated/admin/shows'
     | '/_authenticated/confirmation/$bookingId'
+    | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -162,6 +234,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
@@ -198,6 +277,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShowsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/bookings': {
+      id: '/_authenticated/admin/bookings'
+      path: '/bookings'
+      fullPath: '/admin/bookings'
+      preLoaderRoute: typeof AuthenticatedAdminBookingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/halls': {
+      id: '/_authenticated/admin/halls'
+      path: '/halls'
+      fullPath: '/admin/halls'
+      preLoaderRoute: typeof AuthenticatedAdminHallsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/sessions': {
+      id: '/_authenticated/admin/sessions'
+      path: '/sessions'
+      fullPath: '/admin/sessions'
+      preLoaderRoute: typeof AuthenticatedAdminSessionsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/shows': {
+      id: '/_authenticated/admin/shows'
+      path: '/shows'
+      fullPath: '/admin/shows'
+      preLoaderRoute: typeof AuthenticatedAdminShowsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/confirmation/$bookingId': {
       id: '/_authenticated/confirmation/$bookingId'
       path: '/confirmation/$bookingId'
@@ -208,13 +322,34 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminBookingsRoute: typeof AuthenticatedAdminBookingsRoute
+  AuthenticatedAdminHallsRoute: typeof AuthenticatedAdminHallsRoute
+  AuthenticatedAdminSessionsRoute: typeof AuthenticatedAdminSessionsRoute
+  AuthenticatedAdminShowsRoute: typeof AuthenticatedAdminShowsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminBookingsRoute: AuthenticatedAdminBookingsRoute,
+  AuthenticatedAdminHallsRoute: AuthenticatedAdminHallsRoute,
+  AuthenticatedAdminSessionsRoute: AuthenticatedAdminSessionsRoute,
+  AuthenticatedAdminShowsRoute: AuthenticatedAdminShowsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedTicketsRoute: typeof AuthenticatedTicketsRoute
   AuthenticatedConfirmationBookingIdRoute: typeof AuthenticatedConfirmationBookingIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedTicketsRoute: AuthenticatedTicketsRoute,
   AuthenticatedConfirmationBookingIdRoute:
