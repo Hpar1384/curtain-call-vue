@@ -19,13 +19,13 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 
-const tabs = [
+const tabs: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin", label: "داشبورد", exact: true },
   { to: "/admin/shows", label: "نمایش‌ها" },
   { to: "/admin/halls", label: "سالن‌ها" },
   { to: "/admin/sessions", label: "سانس‌ها" },
   { to: "/admin/bookings", label: "رزروها" },
-] as const;
+];
 
 function AdminLayout() {
   const { data, isPending, error } = useQuery({
