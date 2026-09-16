@@ -25,6 +25,7 @@ import { Route as AuthenticatedAdminSessionsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminShowsRouteImport } from './routes/_authenticated/admin.shows'
 import { Route as AuthenticatedConfirmationBookingIdRouteImport } from './routes/_authenticated/confirmation.$bookingId'
 import { Route as AuthenticatedPaymentBookingIdRouteImport } from './routes/_authenticated/payment.$bookingId'
+import { Route as AuthenticatedTicketTicketIdRouteImport } from './routes/_authenticated/ticket.$ticketId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -109,6 +110,12 @@ const AuthenticatedPaymentBookingIdRoute =
     path: '/payment/$bookingId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTicketTicketIdRoute =
+  AuthenticatedTicketTicketIdRouteImport.update({
+    id: '/ticket/$ticketId',
+    path: '/ticket/$ticketId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/admin/shows': typeof AuthenticatedAdminShowsRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
+  '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -141,6 +149,7 @@ export interface FileRoutesByTo {
   '/admin/shows': typeof AuthenticatedAdminShowsRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
+  '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -160,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/shows': typeof AuthenticatedAdminShowsRoute
   '/_authenticated/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/_authenticated/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
+  '/_authenticated/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/admin/shows'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
+    | '/ticket/$ticketId'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/admin/shows'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
+    | '/ticket/$ticketId'
     | '/admin'
   id:
     | '__root__'
@@ -213,6 +225,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/shows'
     | '/_authenticated/confirmation/$bookingId'
     | '/_authenticated/payment/$bookingId'
+    | '/_authenticated/ticket/$ticketId'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -339,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPaymentBookingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ticket/$ticketId': {
+      id: '/_authenticated/ticket/$ticketId'
+      path: '/ticket/$ticketId'
+      fullPath: '/ticket/$ticketId'
+      preLoaderRoute: typeof AuthenticatedTicketTicketIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -367,6 +387,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTicketsRoute: typeof AuthenticatedTicketsRoute
   AuthenticatedConfirmationBookingIdRoute: typeof AuthenticatedConfirmationBookingIdRoute
   AuthenticatedPaymentBookingIdRoute: typeof AuthenticatedPaymentBookingIdRoute
+  AuthenticatedTicketTicketIdRoute: typeof AuthenticatedTicketTicketIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -376,6 +397,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfirmationBookingIdRoute:
     AuthenticatedConfirmationBookingIdRoute,
   AuthenticatedPaymentBookingIdRoute: AuthenticatedPaymentBookingIdRoute,
+  AuthenticatedTicketTicketIdRoute: AuthenticatedTicketTicketIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
