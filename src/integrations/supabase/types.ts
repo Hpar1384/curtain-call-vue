@@ -142,6 +142,50 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          booking_id: string
+          created_at: string
+          id: string
+          provider: string
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          booking_id: string
+          created_at?: string
+          id?: string
+          provider?: string
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          created_at?: string
+          id?: string
+          provider?: string
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seats: {
         Row: {
           created_at: string
@@ -334,6 +378,60 @@ export type Database = {
         }
         Relationships: []
       }
+      tickets: {
+        Row: {
+          booking_id: string
+          booking_item_id: string
+          created_at: string
+          id: string
+          qr_payload: string
+          seat_label: string
+          status: string
+          ticket_code: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_id: string
+          booking_item_id: string
+          created_at?: string
+          id?: string
+          qr_payload: string
+          seat_label?: string
+          status?: string
+          ticket_code: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_id?: string
+          booking_item_id?: string
+          created_at?: string
+          id?: string
+          qr_payload?: string
+          seat_label?: string
+          status?: string
+          ticket_code?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_booking_item_id_fkey"
+            columns: ["booking_item_id"]
+            isOneToOne: true
+            referencedRelation: "booking_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -361,6 +459,7 @@ export type Database = {
     }
     Functions: {
       admin_stats: { Args: never; Returns: Json }
+      cancel_ticket: { Args: { p_ticket_id: string }; Returns: undefined }
       create_booking: {
         Args: { p_seat_labels: string[]; p_session_id: string; p_slug: string }
         Returns: string
@@ -371,6 +470,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      process_payment: {
+        Args: { p_booking_id: string; p_outcome: string }
+        Returns: Json
       }
       regenerate_hall_seats: {
         Args: { _hall_id: string; _rows: number; _seats_per_row: number }
