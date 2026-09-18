@@ -52,3 +52,14 @@ export type AdminBookingDTO = {
   session: string;
   seats: string[];
 };
+
+export type AdminTicketDTO = {
+  id: string;
+  userId: string;
+  code: string;
+  seat: string;
+  status: "valid" | "used" | "cancelled";
+  createdAt: string;
+  showTitle: string;
+  session: string;
+};
