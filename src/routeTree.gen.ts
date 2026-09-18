@@ -23,6 +23,7 @@ import { Route as AuthenticatedAdminBookingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminHallsRouteImport } from './routes/_authenticated/admin.halls'
 import { Route as AuthenticatedAdminSessionsRouteImport } from './routes/_authenticated/admin.sessions'
 import { Route as AuthenticatedAdminShowsRouteImport } from './routes/_authenticated/admin.shows'
+import { Route as AuthenticatedAdminTicketsRouteImport } from './routes/_authenticated/admin.tickets'
 import { Route as AuthenticatedConfirmationBookingIdRouteImport } from './routes/_authenticated/confirmation.$bookingId'
 import { Route as AuthenticatedPaymentBookingIdRouteImport } from './routes/_authenticated/payment.$bookingId'
 import { Route as AuthenticatedTicketTicketIdRouteImport } from './routes/_authenticated/ticket.$ticketId'
@@ -98,6 +99,12 @@ const AuthenticatedAdminShowsRoute = AuthenticatedAdminShowsRouteImport.update({
   path: '/shows',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminTicketsRoute =
+  AuthenticatedAdminTicketsRouteImport.update({
+    id: '/tickets',
+    path: '/tickets',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedConfirmationBookingIdRoute =
   AuthenticatedConfirmationBookingIdRouteImport.update({
     id: '/confirmation/$bookingId',
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin/halls': typeof AuthenticatedAdminHallsRoute
   '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
   '/admin/halls': typeof AuthenticatedAdminHallsRoute
   '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
@@ -167,6 +176,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/halls': typeof AuthenticatedAdminHallsRoute
   '/_authenticated/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/_authenticated/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/_authenticated/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/_authenticated/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/_authenticated/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/_authenticated/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/admin/halls'
     | '/admin/sessions'
     | '/admin/shows'
+    | '/admin/tickets'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
     | '/ticket/$ticketId'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/admin/halls'
     | '/admin/sessions'
     | '/admin/shows'
+    | '/admin/tickets'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
     | '/ticket/$ticketId'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/halls'
     | '/_authenticated/admin/sessions'
     | '/_authenticated/admin/shows'
+    | '/_authenticated/admin/tickets'
     | '/_authenticated/confirmation/$bookingId'
     | '/_authenticated/payment/$bookingId'
     | '/_authenticated/ticket/$ticketId'
@@ -338,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminShowsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/tickets': {
+      id: '/_authenticated/admin/tickets'
+      path: '/tickets'
+      fullPath: '/admin/tickets'
+      preLoaderRoute: typeof AuthenticatedAdminTicketsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/confirmation/$bookingId': {
       id: '/_authenticated/confirmation/$bookingId'
       path: '/confirmation/$bookingId'
@@ -367,6 +387,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminHallsRoute: typeof AuthenticatedAdminHallsRoute
   AuthenticatedAdminSessionsRoute: typeof AuthenticatedAdminSessionsRoute
   AuthenticatedAdminShowsRoute: typeof AuthenticatedAdminShowsRoute
+  AuthenticatedAdminTicketsRoute: typeof AuthenticatedAdminTicketsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -375,6 +396,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminHallsRoute: AuthenticatedAdminHallsRoute,
   AuthenticatedAdminSessionsRoute: AuthenticatedAdminSessionsRoute,
   AuthenticatedAdminShowsRoute: AuthenticatedAdminShowsRoute,
+  AuthenticatedAdminTicketsRoute: AuthenticatedAdminTicketsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 

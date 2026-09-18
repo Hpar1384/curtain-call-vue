@@ -25,6 +25,7 @@ const tabs: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin/halls", label: "سالن‌ها" },
   { to: "/admin/sessions", label: "سانس‌ها" },
   { to: "/admin/bookings", label: "رزروها" },
+  { to: "/admin/tickets", label: "بلیت‌ها" },
 ];
 
 function AdminLayout() {

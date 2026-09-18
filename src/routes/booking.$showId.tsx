@@ -92,7 +92,7 @@ function BookingSummary() {
       await queryClient.invalidateQueries({ queryKey: ["seats", session.id] });
       await queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
       navigate({
-        to: "/confirmation/$bookingId",
+        to: "/payment/$bookingId",
         params: { bookingId: result.bookingId },
       });
     } catch (error) {
@@ -151,7 +151,7 @@ function BookingSummary() {
 
       <StickyBar>
         <PrimaryButton disabled={seats.length === 0 || saving} onClick={confirm}>
-          تأیید رزرو
+          {saving ? "در حال ثبت…" : "ادامه و پرداخت"}
         </PrimaryButton>
       </StickyBar>
     </AppScreen>

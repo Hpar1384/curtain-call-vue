@@ -9,6 +9,7 @@ import type {
   AdminSessionDTO,
   AdminShowDTO,
   AdminStats,
+  AdminTicketDTO,
 } from "@/lib/admin-types";
 
 type AdminContext = {
@@ -317,4 +318,50 @@ export const adminUpdateBookingStatus = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+/* --------------------------------- tickets -------------------------------- */
+
+export const adminListTickets = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminTicketDTO[]> => {
+    await assertAdmin(context);
+    const { data, error } = await context.supabase
+      .from("tickets")
+      .select(
+        "id, user_id, ticket_code, seat_label, status, created_at, bookings(shows(title), show_sessions(date_label, weekday_label, time_label))",
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+
+    type Row = {
+      id: string;
+      user_id: string;
+      ticket_code: string;
+      seat_label: string;
+      status: string;
+      created_at: string;
+      bookings: {
+        shows: { title: string } | null;
+        show_sessions: {
+          date_label: string;
+          weekday_label: string;
+          time_label: string;
+        } | null;
+      } | null;
+    };
+
+    return ((data ?? []) as unknown as Row[]).map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      code: r.ticket_code,
+      seat: r.seat_label,
+      status: r.status as AdminTicketDTO["status"],
+      createdAt: r.created_at,
+      showTitle: r.bookings?.shows?.title ?? "",
+      session: r.bookings?.show_sessions
+        ? `${r.bookings.show_sessions.weekday_label} ${r.bookings.show_sessions.date_label} · ${r.bookings.show_sessions.time_label}`
+        : "",
+    }));
   });
