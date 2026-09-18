@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getMyBooking } from "@/lib/booking.functions";
+import { getBookingTickets } from "@/lib/payment.functions";
 import { formatPrice, toPersianNumber } from "@/lib/shows";
 import { posterFor, statusLabel } from "@/lib/booking-ui";
 
