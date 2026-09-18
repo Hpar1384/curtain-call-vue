@@ -41,6 +41,6 @@ export type BookingDTO = {
   time: string;
   seats: string[];
   total: number;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "awaiting_payment" | "confirmed" | "cancelled";
   createdAt: string;
 };

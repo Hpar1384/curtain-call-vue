@@ -16,7 +16,8 @@ export function posterFor(key: string): string {
 }
 
 export function statusLabel(status: BookingDTO["status"]): string {
-  if (status === "confirmed") return "تأییدشده";
+  if (status === "confirmed") return "پرداخت‌شده";
   if (status === "cancelled") return "لغوشده";
+  if (status === "awaiting_payment") return "در انتظار پرداخت";
   return "در انتظار";
 }
