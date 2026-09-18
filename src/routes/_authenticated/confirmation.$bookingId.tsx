@@ -48,6 +48,11 @@ function ConfirmationScreen() {
   const { data } = useSuspenseQuery(bookingQueryOptions(bookingId));
   const b = data!;
   const trackingCode = b.id.split("-")[0]!.toUpperCase();
+  const tickets = useQuery({
+    queryKey: ["booking-tickets", bookingId],
+    queryFn: () => getBookingTickets({ data: { bookingId } }),
+    enabled: b.status === "confirmed",
+  });
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background">
