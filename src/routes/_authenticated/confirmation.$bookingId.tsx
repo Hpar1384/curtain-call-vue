@@ -61,7 +61,11 @@ function ConfirmationScreen() {
           ✓
         </span>
         <h1 className="mt-4 text-2xl font-extrabold text-foreground">
-          رزرو با موفقیت ثبت شد
+          {b.status === "confirmed"
+            ? "پرداخت موفق و بلیت‌ها صادر شد"
+            : b.status === "cancelled"
+              ? "این رزرو لغو شده است"
+              : "رزرو در انتظار پرداخت"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           شناسهٔ پیگیری:{" "}
