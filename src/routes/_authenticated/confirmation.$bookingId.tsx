@@ -108,6 +108,37 @@ function ConfirmationScreen() {
           />
         </div>
 
+        {b.status === "awaiting_payment" && (
+          <Link
+            to="/payment/$bookingId"
+            params={{ bookingId }}
+            className="block rounded-2xl bg-primary py-3.5 text-center text-sm font-extrabold text-primary-foreground"
+          >
+            پرداخت رزرو
+          </Link>
+        )}
+
+        {(tickets.data?.length ?? 0) > 0 && (
+          <div className="rounded-2xl bg-card p-4">
+            <p className="text-xs font-bold text-muted-foreground">بلیت‌های دیجیتال</p>
+            <div className="mt-2 flex flex-col gap-2">
+              {tickets.data!.map((t) => (
+                <Link
+                  key={t.id}
+                  to="/ticket/$ticketId"
+                  params={{ ticketId: t.id }}
+                  className="flex items-center justify-between gap-3 rounded-xl bg-secondary px-3 py-2.5 text-sm"
+                >
+                  <span className="font-bold text-foreground">صندلی {t.seat}</span>
+                  <span className="text-xs font-bold text-gold" dir="ltr">
+                    {t.code}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <Link
             to="/tickets"
