@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       booking_items: {
         Row: {
+          active: boolean
           booking_id: string
           created_at: string
           id: string
@@ -23,6 +24,7 @@ export type Database = {
           unit_price: number
         }
         Insert: {
+          active?: boolean
           booking_id: string
           created_at?: string
           id?: string
@@ -30,6 +32,7 @@ export type Database = {
           unit_price?: number
         }
         Update: {
+          active?: boolean
           booking_id?: string
           created_at?: string
           id?: string
@@ -47,7 +50,7 @@ export type Database = {
           {
             foreignKeyName: "booking_items_show_seat_id_fkey"
             columns: ["show_seat_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "show_seats"
             referencedColumns: ["id"]
           },
