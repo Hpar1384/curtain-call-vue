@@ -110,6 +110,45 @@ export type Database = {
           },
         ]
       }
+      check_ins: {
+        Row: {
+          checked_in_at: string
+          checked_in_by: string
+          id: string
+          session_id: string
+          ticket_id: string
+        }
+        Insert: {
+          checked_in_at?: string
+          checked_in_by: string
+          id?: string
+          session_id: string
+          ticket_id: string
+        }
+        Update: {
+          checked_in_at?: string
+          checked_in_by?: string
+          id?: string
+          session_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "show_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "check_ins_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: true
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       halls: {
         Row: {
           created_at: string
@@ -462,7 +501,12 @@ export type Database = {
     }
     Functions: {
       admin_stats: { Args: never; Returns: Json }
+      can_checkin: { Args: { _user_id: string }; Returns: boolean }
       cancel_ticket: { Args: { p_ticket_id: string }; Returns: undefined }
+      checkin_ticket: {
+        Args: { p_code: string; p_session_id: string }
+        Returns: Json
+      }
       create_booking: {
         Args: { p_seat_labels: string[]; p_session_id: string; p_slug: string }
         Returns: string
@@ -482,6 +526,7 @@ export type Database = {
         Args: { _hall_id: string; _rows: number; _seats_per_row: number }
         Returns: undefined
       }
+      staff_session_stats: { Args: { p_session_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user" | "checkin_operator"
