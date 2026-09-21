@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedTicketsRouteImport } from './routes/_authenticated/tickets'
 import { Route as BookingShowIdRouteImport } from './routes/booking.$showId'
 import { Route as SeatsShowIdRouteImport } from './routes/seats.$showId'
@@ -26,6 +27,8 @@ import { Route as AuthenticatedAdminShowsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminTicketsRouteImport } from './routes/_authenticated/admin.tickets'
 import { Route as AuthenticatedConfirmationBookingIdRouteImport } from './routes/_authenticated/confirmation.$bookingId'
 import { Route as AuthenticatedPaymentBookingIdRouteImport } from './routes/_authenticated/payment.$bookingId'
+import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
+import { Route as AuthenticatedStaffCheckinRouteImport } from './routes/_authenticated/staff.checkin'
 import { Route as AuthenticatedTicketTicketIdRouteImport } from './routes/_authenticated/ticket.$ticketId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -50,6 +53,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTicketsRoute = AuthenticatedTicketsRouteImport.update({
@@ -117,6 +125,17 @@ const AuthenticatedPaymentBookingIdRoute =
     path: '/payment/$bookingId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStaffIndexRoute = AuthenticatedStaffIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedStaffRoute,
+} as any)
+const AuthenticatedStaffCheckinRoute =
+  AuthenticatedStaffCheckinRouteImport.update({
+    id: '/checkin',
+    path: '/checkin',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
 const AuthenticatedTicketTicketIdRoute =
   AuthenticatedTicketTicketIdRouteImport.update({
     id: '/ticket/$ticketId',
@@ -129,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
+  '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/tickets': typeof AuthenticatedTicketsRoute
   '/booking/$showId': typeof BookingShowIdRoute
   '/seats/$showId': typeof SeatsShowIdRoute
@@ -140,8 +160,10 @@ export interface FileRoutesByFullPath {
   '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
+  '/staff/checkin': typeof AuthenticatedStaffCheckinRoute
   '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/staff/': typeof AuthenticatedStaffIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -158,8 +180,10 @@ export interface FileRoutesByTo {
   '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
+  '/staff/checkin': typeof AuthenticatedStaffCheckinRoute
   '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/staff': typeof AuthenticatedStaffIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -168,6 +192,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
   '/_authenticated/tickets': typeof AuthenticatedTicketsRoute
   '/booking/$showId': typeof BookingShowIdRoute
   '/seats/$showId': typeof SeatsShowIdRoute
@@ -179,8 +204,10 @@ export interface FileRoutesById {
   '/_authenticated/admin/tickets': typeof AuthenticatedAdminTicketsRoute
   '/_authenticated/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/_authenticated/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
+  '/_authenticated/staff/checkin': typeof AuthenticatedStaffCheckinRoute
   '/_authenticated/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -189,6 +216,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/profile'
+    | '/staff'
     | '/tickets'
     | '/booking/$showId'
     | '/seats/$showId'
@@ -200,8 +228,10 @@ export interface FileRouteTypes {
     | '/admin/tickets'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
+    | '/staff/checkin'
     | '/ticket/$ticketId'
     | '/admin/'
+    | '/staff/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -218,8 +248,10 @@ export interface FileRouteTypes {
     | '/admin/tickets'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
+    | '/staff/checkin'
     | '/ticket/$ticketId'
     | '/admin'
+    | '/staff'
   id:
     | '__root__'
     | '/'
@@ -227,6 +259,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/admin'
     | '/_authenticated/profile'
+    | '/_authenticated/staff'
     | '/_authenticated/tickets'
     | '/booking/$showId'
     | '/seats/$showId'
@@ -238,8 +271,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tickets'
     | '/_authenticated/confirmation/$bookingId'
     | '/_authenticated/payment/$bookingId'
+    | '/_authenticated/staff/checkin'
     | '/_authenticated/ticket/$ticketId'
     | '/_authenticated/admin/'
+    | '/_authenticated/staff/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -286,6 +321,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/staff': {
+      id: '/_authenticated/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof AuthenticatedStaffRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tickets': {
@@ -372,6 +414,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPaymentBookingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/staff/': {
+      id: '/_authenticated/staff/'
+      path: '/'
+      fullPath: '/staff/'
+      preLoaderRoute: typeof AuthenticatedStaffIndexRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
+    '/_authenticated/staff/checkin': {
+      id: '/_authenticated/staff/checkin'
+      path: '/checkin'
+      fullPath: '/staff/checkin'
+      preLoaderRoute: typeof AuthenticatedStaffCheckinRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
     '/_authenticated/ticket/$ticketId': {
       id: '/_authenticated/ticket/$ticketId'
       path: '/ticket/$ticketId'
@@ -403,9 +459,23 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedStaffRouteChildren {
+  AuthenticatedStaffCheckinRoute: typeof AuthenticatedStaffCheckinRoute
+  AuthenticatedStaffIndexRoute: typeof AuthenticatedStaffIndexRoute
+}
+
+const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
+  AuthenticatedStaffCheckinRoute: AuthenticatedStaffCheckinRoute,
+  AuthenticatedStaffIndexRoute: AuthenticatedStaffIndexRoute,
+}
+
+const AuthenticatedStaffRouteWithChildren =
+  AuthenticatedStaffRoute._addFileChildren(AuthenticatedStaffRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
   AuthenticatedTicketsRoute: typeof AuthenticatedTicketsRoute
   AuthenticatedConfirmationBookingIdRoute: typeof AuthenticatedConfirmationBookingIdRoute
   AuthenticatedPaymentBookingIdRoute: typeof AuthenticatedPaymentBookingIdRoute
@@ -415,6 +485,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
   AuthenticatedTicketsRoute: AuthenticatedTicketsRoute,
   AuthenticatedConfirmationBookingIdRoute:
     AuthenticatedConfirmationBookingIdRoute,

@@ -8,6 +8,20 @@
       "when": 1789937279937,
       "tag": "0000_release_seat_on_cancel",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790023461469,
+      "tag": "0001_staff_checkin",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790023496347,
+      "tag": "0002_checkin_records_and_rpc",
+      "breakpoints": true
     }
   ]
 }
