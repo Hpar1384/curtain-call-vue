@@ -94,6 +94,7 @@ export const listShows = createServerFn({ method: "GET" }).handler(
     const { data, error } = await supabase
       .from("shows")
       .select(showSelect)
+      .eq("is_active", true)
       .order("sort_order", { ascending: true });
     if (error) throw new Error(error.message);
     return Promise.all(
