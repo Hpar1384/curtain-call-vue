@@ -2,15 +2,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { BookingDTO } from "@/lib/catalog-types";
+import { sessionLabels } from "@/lib/session-time";
 
 const bookingSelect =
-  "id, total_price, status, created_at, seat_count, shows(slug, title, poster_key, halls(name, theaters(name))), show_sessions(date_label, weekday_label, time_label), booking_items(show_seats(seats(row_label, seat_number)))";
+  "id, total_price, status, created_at, expires_at, seat_count, shows(slug, title, poster_key, halls(name, theaters(name))), show_sessions(starts_at), booking_items(show_seats(seats(row_label, seat_number)))";
 
 type BookingRow = {
   id: string;
   total_price: number;
   status: string;
   created_at: string;
+  expires_at: string | null;
   seat_count: number;
   shows: {
     slug: string;
@@ -18,11 +20,7 @@ type BookingRow = {
     poster_key: string;
     halls: { name: string; theaters: { name: string } | null } | null;
   } | null;
-  show_sessions: {
-    date_label: string;
-    weekday_label: string;
-    time_label: string;
-  } | null;
+  show_sessions: { starts_at: string } | null;
   booking_items: {
     show_seats: { seats: { row_label: string; seat_number: number } | null } | null;
   }[];
@@ -41,13 +39,12 @@ function toBookingDTO(row: BookingRow): BookingDTO {
     showTitle: row.shows?.title ?? "",
     posterKey: row.shows?.poster_key ?? "hamlet",
     venue: `${row.shows?.halls?.name ?? ""} — ${row.shows?.halls?.theaters?.name ?? ""}`,
-    date: row.show_sessions?.date_label ?? "",
-    weekday: row.show_sessions?.weekday_label ?? "",
-    time: row.show_sessions?.time_label ?? "",
+    ...sessionLabels(row.show_sessions?.starts_at),
     seats,
     total: row.total_price,
     status: (row.status as BookingDTO["status"]) ?? "pending",
     createdAt: row.created_at,
+    expiresAt: row.expires_at,
   };
 }
 
