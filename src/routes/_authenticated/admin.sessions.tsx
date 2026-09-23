@@ -7,8 +7,8 @@ import {
   adminListSessions,
   adminListShows,
   adminSaveSession,
-} from "@/lib/admin.functions";
-import type { AdminSessionDTO } from "@/lib/admin-types";
+} from "@/modules/admin/admin.functions";
+import type { AdminSessionDTO } from "@/modules/admin/admin-types";
 import {
   Card,
   ErrorNote,

@@ -7,8 +7,8 @@ import {
   adminListHalls,
   adminListTheaters,
   adminSaveHall,
-} from "@/lib/admin.functions";
-import type { AdminHallDTO } from "@/lib/admin-types";
+} from "@/modules/admin/admin.functions";
+import type { AdminHallDTO } from "@/modules/admin/admin-types";
 import {
   Card,
   ErrorNote,

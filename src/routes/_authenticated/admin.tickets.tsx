@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { adminListTickets } from "@/lib/admin.functions";
+import { adminListTickets } from "@/modules/admin/admin.functions";
 import { Card, ErrorNote, Loading } from "@/components/admin/ui";
 import { ticketStatusLabel } from "@/lib/payment-types";
 

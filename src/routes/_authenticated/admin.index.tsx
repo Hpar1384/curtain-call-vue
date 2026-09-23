@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { getAdminStats } from "@/lib/admin.functions";
+import { getAdminStats } from "@/modules/admin/admin.functions";
 import { toPersianNumber } from "@/lib/format";
 import { Card, ErrorNote, Loading } from "@/components/admin/ui";
 

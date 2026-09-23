@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { checkAdmin } from "@/lib/admin.functions";
+import { checkAdmin } from "@/modules/admin/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({

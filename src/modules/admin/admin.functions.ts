@@ -10,7 +10,7 @@ import type {
   AdminShowDTO,
   AdminStats,
   AdminTicketDTO,
-} from "@/lib/admin-types";
+} from "@/modules/admin/admin-types";
 
 type AdminContext = {
   supabase: SupabaseClient<Database>;

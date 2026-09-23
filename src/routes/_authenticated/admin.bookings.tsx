@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { adminListBookings, adminUpdateBookingStatus } from "@/lib/admin.functions";
-import type { AdminBookingDTO } from "@/lib/admin-types";
+import { adminListBookings, adminUpdateBookingStatus } from "@/modules/admin/admin.functions";
+import type { AdminBookingDTO } from "@/modules/admin/admin-types";
 import { Card, ErrorNote, Loading, inputClass } from "@/components/admin/ui";
 import { formatPrice, toPersianNumber } from "@/lib/format";
 import { statusLabel } from "@/lib/booking-ui";
