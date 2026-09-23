@@ -1,5 +1,6 @@
 export type SessionDTO = {
   id: string;
+  startsAt: string;
   date: string;
   weekday: string;
   time: string;
@@ -27,6 +28,8 @@ export type SeatDTO = {
   showSeatId: string;
   row: string;
   number: number;
+  /** per-seat override; null → show price */
+  price: number | null;
   status: "free" | "reserved";
 };
 
@@ -43,4 +46,5 @@ export type BookingDTO = {
   total: number;
   status: "pending" | "awaiting_payment" | "confirmed" | "cancelled";
   createdAt: string;
+  expiresAt: string | null;
 };

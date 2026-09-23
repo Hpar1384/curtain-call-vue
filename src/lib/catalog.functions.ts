@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { toPersianNumber } from "@/lib/format";
+import { sessionLabels } from "@/lib/session-time";
 import type { SeatDTO, ShowDTO } from "@/lib/catalog-types";
 
 function publicClient(): SupabaseClient<Database> {
@@ -23,7 +24,7 @@ function publicClient(): SupabaseClient<Database> {
 }
 
 const showSelect =
-  "id, slug, title, description, poster_key, director, genre, duration_minutes, age_rating, price, sort_order, halls(name, theaters(name)), show_sessions(id, date_label, weekday_label, time_label, sort_order)";
+  "id, slug, title, description, poster_key, director, genre, duration_minutes, age_rating, price, sort_order, halls(name, theaters(name)), show_sessions(id, starts_at, sort_order)";
 
 type ShowRow = {
   id: string;
@@ -39,22 +40,15 @@ type ShowRow = {
   halls: { name: string; theaters: { name: string } | null } | null;
   show_sessions: {
     id: string;
-    date_label: string;
-    weekday_label: string;
-    time_label: string;
+    starts_at: string;
     sort_order: number;
   }[];
 };
 
 async function toShowDTO(supabase: SupabaseClient<Database>, row: ShowRow): Promise<ShowDTO> {
   const sessions = [...row.show_sessions]
-    .sort((a, b) => a.sort_order - b.sort_order)
-    .map((s) => ({
-      id: s.id,
-      date: s.date_label,
-      weekday: s.weekday_label,
-      time: s.time_label,
-    }));
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at) || a.sort_order - b.sort_order)
+    .map((s) => ({ id: s.id, startsAt: s.starts_at, ...sessionLabels(s.starts_at) }));
 
   let availableSeats = 0;
   const first = sessions[0];
@@ -114,9 +108,10 @@ export const getSeatMap = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ sessionId: z.string().uuid() }).parse(input))
   .handler(async ({ data }): Promise<SeatDTO[]> => {
     const supabase = publicClient();
+    await supabase.rpc("expire_stale_bookings");
     const { data: rows, error } = await supabase
       .from("show_seats")
-      .select("id, status, seats(row_label, seat_number)")
+      .select("id, status, price, seats(row_label, seat_number)")
       .eq("session_id", data.sessionId);
     if (error) throw new Error(error.message);
 
@@ -124,6 +119,7 @@ export const getSeatMap = createServerFn({ method: "GET" })
       (rows ?? []) as unknown as {
         id: string;
         status: string;
+        price: number | null;
         seats: { row_label: string; seat_number: number } | null;
       }[]
     )
@@ -133,6 +129,7 @@ export const getSeatMap = createServerFn({ method: "GET" })
         showSeatId: r.id,
         row: r.seats!.row_label,
         number: r.seats!.seat_number,
+        price: r.price,
         status: r.status === "available" ? ("free" as const) : ("reserved" as const),
       }))
       .sort((a, b) => (a.row === b.row ? a.number - b.number : a.row.localeCompare(b.row)));

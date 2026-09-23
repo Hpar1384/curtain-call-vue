@@ -11,7 +11,11 @@ import type {
   AdminStats,
   AdminTicketDTO,
   AdminAuditDTO,
+  AdminTheaterDTO,
+  AdminUserDTO,
+  AppRole,
 } from "@/modules/admin/admin-types";
+import { sessionLabel } from "@/lib/session-time";
 
 type AdminContext = {
   supabase: SupabaseClient<Database>;
@@ -25,6 +29,36 @@ async function assertAdmin(context: AdminContext) {
   });
   if (error) throw new Error(error.message);
   if (data !== true) throw new Error("دسترسی مدیریتی ندارید");
+}
+
+/** Resolve user ids → email/name. Caller MUST have passed assertAdmin. */
+async function userEmails(ids: string[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (ids.length === 0) return out;
+  const users = await listAllAuthUsers();
+  for (const u of users) out.set(u.id, u.email);
+  return out;
+}
+
+async function listAllAuthUsers(): Promise<{ id: string; email: string; name: string; createdAt: string; lastSignInAt: string | null }[]> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const all: { id: string; email: string; name: string; createdAt: string; lastSignInAt: string | null }[] = [];
+  for (let page = 1; page <= 20; page++) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw new Error(error.message);
+    for (const u of data.users) {
+      const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+      all.push({
+        id: u.id,
+        email: u.email ?? "",
+        name: String(meta["full_name"] ?? meta["name"] ?? ""),
+        createdAt: u.created_at,
+        lastSignInAt: u.last_sign_in_at ?? null,
+      });
+    }
+    if (data.users.length < 1000) break;
+  }
+  return all;
 }
 
 export const checkAdmin = createServerFn({ method: "GET" })
@@ -211,9 +245,9 @@ export const adminListSessions = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("show_sessions")
       .select(
-        "id, show_id, date_label, weekday_label, time_label, sort_order, shows(title, halls(name))",
+        "id, show_id, starts_at, sort_order, shows(title, halls(name))",
       )
-      .order("sort_order", { ascending: true });
+      .order("starts_at", { ascending: true });
     if (error) throw new Error(error.message);
     const { data: ov, error: ovErr } = await context.supabase.rpc("admin_session_overview");
     if (ovErr) throw new Error(ovErr.message);
@@ -233,6 +267,7 @@ export const adminListSessions = createServerFn({ method: "GET" })
       const o = byId.get(r.id);
       return {
         ...r,
+        label: sessionLabel(r.starts_at),
         showTitle: r.shows?.title ?? "",
         hallName: r.shows?.halls?.name ?? "",
         capacity: o?.capacity ?? 0,
@@ -246,9 +281,7 @@ export const adminListSessions = createServerFn({ method: "GET" })
 const sessionInput = z.object({
   id: z.string().uuid().optional(),
   show_id: z.string().uuid(),
-  date_label: z.string().min(1),
-  weekday_label: z.string().min(1),
-  time_label: z.string().min(1),
+  starts_at: z.string().datetime({ offset: true }),
   sort_order: z.number().int().default(0),
 });
 
@@ -291,7 +324,7 @@ export const adminListBookings = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("bookings")
       .select(
-        "id, user_id, status, total_price, seat_count, created_at, shows(title), show_sessions(date_label, weekday_label, time_label), booking_items(show_seats(seats(row_label, seat_number)))",
+        "id, user_id, status, total_price, seat_count, created_at, expires_at, shows(title), show_sessions(starts_at), booking_items(show_seats(seats(row_label, seat_number)))",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -304,28 +337,27 @@ export const adminListBookings = createServerFn({ method: "GET" })
       total_price: number;
       seat_count: number;
       created_at: string;
+      expires_at: string | null;
       shows: { title: string } | null;
-      show_sessions: {
-        date_label: string;
-        weekday_label: string;
-        time_label: string;
-      } | null;
+      show_sessions: { starts_at: string } | null;
       booking_items: {
         show_seats: { seats: { row_label: string; seat_number: number } | null } | null;
       }[];
     };
 
-    return ((data ?? []) as unknown as Row[]).map((r) => ({
+    const rows = (data ?? []) as unknown as Row[];
+    const emails = await userEmails(rows.map((r) => r.user_id));
+    return rows.map((r) => ({
       id: r.id,
       userId: r.user_id,
+      userEmail: emails.get(r.user_id) ?? r.user_id.slice(0, 8),
+      expiresAt: r.expires_at,
       status: r.status as AdminBookingDTO["status"],
       total: r.total_price,
       seatCount: r.seat_count,
       createdAt: r.created_at,
       showTitle: r.shows?.title ?? "",
-      session: r.show_sessions
-        ? `${r.show_sessions.weekday_label} ${r.show_sessions.date_label} · ${r.show_sessions.time_label}`
-        : "",
+      session: sessionLabel(r.show_sessions?.starts_at),
       seats: r.booking_items
         .map((i) => i.show_seats?.seats)
         .filter((s): s is { row_label: string; seat_number: number } => Boolean(s))
@@ -353,10 +385,10 @@ export const adminListTickets = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("tickets")
       .select(
-        "id, user_id, ticket_code, seat_label, status, created_at, bookings(shows(title), show_sessions(date_label, weekday_label, time_label))",
+        "id, user_id, ticket_code, seat_label, status, created_at, used_at, bookings(shows(title), show_sessions(starts_at))",
       )
       .order("created_at", { ascending: false })
-      .limit(200);
+      .limit(1000);
     if (error) throw new Error(error.message);
 
     type Row = {
@@ -366,27 +398,26 @@ export const adminListTickets = createServerFn({ method: "GET" })
       seat_label: string;
       status: string;
       created_at: string;
+      used_at: string | null;
       bookings: {
         shows: { title: string } | null;
-        show_sessions: {
-          date_label: string;
-          weekday_label: string;
-          time_label: string;
-        } | null;
+        show_sessions: { starts_at: string } | null;
       } | null;
     };
 
-    return ((data ?? []) as unknown as Row[]).map((r) => ({
+    const rows = (data ?? []) as unknown as Row[];
+    const emails = await userEmails(rows.map((r) => r.user_id));
+    return rows.map((r) => ({
       id: r.id,
       userId: r.user_id,
+      userEmail: emails.get(r.user_id) ?? r.user_id.slice(0, 8),
+      usedAt: r.used_at,
       code: r.ticket_code,
       seat: r.seat_label,
       status: r.status as AdminTicketDTO["status"],
       createdAt: r.created_at,
       showTitle: r.bookings?.shows?.title ?? "",
-      session: r.bookings?.show_sessions
-        ? `${r.bookings.show_sessions.weekday_label} ${r.bookings.show_sessions.date_label} · ${r.bookings.show_sessions.time_label}`
-        : "",
+      session: sessionLabel(r.bookings?.show_sessions?.starts_at),
     }));
   });
 
@@ -451,4 +482,101 @@ export const adminListAuditLogs = createServerFn({ method: "GET" })
       details: (r.details ?? {}) as Record<string, string | number | boolean | null>,
       createdAt: r.created_at,
     }));
+  });
+
+/* -------------------------------- theaters -------------------------------- */
+
+export const adminListTheatersFull = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminTheaterDTO[]> => {
+    await assertAdmin(context);
+    const { data, error } = await context.supabase
+      .from("theaters")
+      .select("id, name, city, halls(id)")
+      .order("name", { ascending: true });
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as unknown as { id: string; name: string; city: string; halls: { id: string }[] }[]).map(
+      (t) => ({ id: t.id, name: t.name, city: t.city, hallCount: t.halls.length }),
+    );
+  });
+
+export const adminSaveTheater = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        name: z.string().trim().min(1).max(120),
+        city: z.string().trim().min(1).max(80),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await assertAdmin(context);
+    const { id, ...values } = data;
+    const { error } = id
+      ? await context.supabase.from("theaters").update(values).eq("id", id)
+      : await context.supabase.from("theaters").insert(values);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminDeleteTheater = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await assertAdmin(context);
+    const { error } = await context.supabase.from("theaters").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/* ---------------------------------- users --------------------------------- */
+
+export const adminListUsers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminUserDTO[]> => {
+    await assertAdmin(context);
+    const users = await listAllAuthUsers();
+    const { data: roles, error } = await context.supabase.from("user_roles").select("user_id, role");
+    if (error) throw new Error(error.message);
+    const byUser = new Map<string, AppRole[]>();
+    for (const r of roles ?? []) {
+      byUser.set(r.user_id, [...(byUser.get(r.user_id) ?? []), r.role as AppRole]);
+    }
+    return users
+      .map((u) => ({ ...u, roles: byUser.get(u.id) ?? [], isSelf: u.id === context.userId }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  });
+
+export const adminSetUserRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        role: z.enum(["admin", "checkin_operator"]),
+        enabled: z.boolean(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await assertAdmin(context);
+    if (data.userId === context.userId && data.role === "admin" && !data.enabled) {
+      throw new Error("نمی‌توانید نقش مدیریت را از حساب خودتان بردارید");
+    }
+    if (data.enabled) {
+      const { error } = await context.supabase
+        .from("user_roles")
+        .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role", ignoreDuplicates: true });
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await context.supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", data.userId)
+        .eq("role", data.role);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
   });

@@ -2,17 +2,15 @@ import type { AdminBookingDTO } from "./admin-types";
 
 export type BookingFilter = "pending" | "paid" | "cancelled" | "expired";
 
-/** Unpaid bookings older than this are treated as expired. */
-export const PAYMENT_WINDOW_MS = 15 * 60 * 1000;
-
+/** Unpaid past expires_at → expired (the backend releases its seats automatically). */
 export function bookingFilterOf(
   status: AdminBookingDTO["status"],
-  createdAt: string,
+  expiresAt: string | null,
   now: number,
 ): BookingFilter {
   if (status === "confirmed") return "paid";
   if (status === "cancelled") return "cancelled";
-  return now - new Date(createdAt).getTime() > PAYMENT_WINDOW_MS ? "expired" : "pending";
+  return expiresAt && new Date(expiresAt).getTime() < now ? "expired" : "pending";
 }
 
 export function checkinRate(total: number, used: number): number {
@@ -26,6 +24,8 @@ const entityLabels: Record<string, string> = {
   bookings: "رزرو",
   tickets: "بلیت",
   check_ins: "ورود",
+  theaters: "تئاتر",
+  user_roles: "نقش کاربر",
 };
 const actionLabels: Record<string, string> = {
   insert: "ایجاد",

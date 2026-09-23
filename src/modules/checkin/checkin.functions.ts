@@ -6,6 +6,7 @@ import type {
   SessionStats,
   StaffSessionDTO,
 } from "@/modules/checkin/checkin-types";
+import { sessionLabels } from "@/lib/session-time";
 
 export const checkStaffAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -19,9 +20,7 @@ export const checkStaffAccess = createServerFn({ method: "GET" })
 
 type SessionRow = {
   id: string;
-  date_label: string;
-  weekday_label: string;
-  time_label: string;
+  starts_at: string;
   shows: { title: string; halls: { name: string } | null } | null;
 };
 
@@ -37,17 +36,15 @@ export const listStaffSessions = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("show_sessions")
-      .select("id, date_label, weekday_label, time_label, shows(title, halls(name))")
-      .order("sort_order", { ascending: true });
+      .select("id, starts_at, shows(title, halls(name))")
+      .order("starts_at", { ascending: true });
     if (error) throw new Error(error.message);
 
     return ((data ?? []) as unknown as SessionRow[]).map((row) => ({
       id: row.id,
       showTitle: row.shows?.title ?? "",
       hall: row.shows?.halls?.name ?? "",
-      date: row.date_label,
-      weekday: row.weekday_label,
-      time: row.time_label,
+      ...sessionLabels(row.starts_at),
     }));
   });
 
@@ -64,7 +61,9 @@ export const checkinTicket = createServerFn({ method: "POST" })
       p_session_id: data.sessionId,
     });
     if (error) throw new Error(error.message);
-    return result as unknown as CheckinResult;
+    const r = result as unknown as CheckinResult & { startsAt?: string };
+    if (r.ok) return { ...r, ...sessionLabels(r.startsAt) };
+    return r;
   });
 
 export const getSessionStats = createServerFn({ method: "GET" })

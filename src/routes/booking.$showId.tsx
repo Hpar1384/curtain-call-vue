@@ -1,8 +1,8 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getShow } from "@/lib/catalog.functions";
+import { getSeatMap, getShow } from "@/lib/catalog.functions";
 import { createBooking } from "@/lib/booking.functions";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -72,7 +72,14 @@ function BookingSummary() {
   const show = toShow(data!);
   const session = getSession(show, sessionParam) ?? show.sessions[0]!;
   const seats = seatsParam.split(",").filter(Boolean);
-  const total = show.price * seats.length;
+  const seatMap = useQuery({
+    queryKey: ["seat-map", session.id],
+    queryFn: () => getSeatMap({ data: { sessionId: session.id } }),
+  });
+  const priceOf = new Map((seatMap.data ?? []).map((s) => [s.id, s.price ?? show.price]));
+  const unitPrices = seats.map((id) => priceOf.get(id) ?? show.price);
+  const total = unitPrices.reduce((a, b) => a + b, 0);
+  const uniform = unitPrices.every((p) => p === unitPrices[0]);
 
   const confirm = async () => {
     if (saving || seats.length === 0) return;
@@ -144,7 +151,10 @@ function BookingSummary() {
         <div className="divide-y divide-border rounded-2xl bg-card px-4">
           <Row label="صندلی‌ها" value={seats.join("، ") || "—"} />
           <Row label="تعداد بلیت" value={`${toPersianNumber(seats.length)} عدد`} />
-          <Row label="قیمت هر بلیت" value={`${formatPrice(show.price)} تومان`} />
+          <Row
+            label="قیمت هر بلیت"
+            value={uniform ? `${formatPrice(unitPrices[0] ?? show.price)} تومان` : "متغیر بر اساس صندلی"}
+          />
           <Row label="مبلغ کل" value={`${formatPrice(total)} تومان`} highlight />
         </div>
       </div>

@@ -26,12 +26,15 @@ import { Route as AuthenticatedAdminHallsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as AuthenticatedAdminSessionsRouteImport } from './routes/_authenticated/admin.sessions'
 import { Route as AuthenticatedAdminShowsRouteImport } from './routes/_authenticated/admin.shows'
+import { Route as AuthenticatedAdminTheatersRouteImport } from './routes/_authenticated/admin.theaters'
 import { Route as AuthenticatedAdminTicketsRouteImport } from './routes/_authenticated/admin.tickets'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedConfirmationBookingIdRouteImport } from './routes/_authenticated/confirmation.$bookingId'
 import { Route as AuthenticatedPaymentBookingIdRouteImport } from './routes/_authenticated/payment.$bookingId'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
 import { Route as AuthenticatedStaffCheckinRouteImport } from './routes/_authenticated/staff.checkin'
 import { Route as AuthenticatedTicketTicketIdRouteImport } from './routes/_authenticated/ticket.$ticketId'
+import { Route as ApiPublicPosterSplatRouteImport } from './routes/api/public/poster.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -120,12 +123,23 @@ const AuthenticatedAdminShowsRoute = AuthenticatedAdminShowsRouteImport.update({
   path: '/shows',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminTheatersRoute =
+  AuthenticatedAdminTheatersRouteImport.update({
+    id: '/theaters',
+    path: '/theaters',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminTicketsRoute =
   AuthenticatedAdminTicketsRouteImport.update({
     id: '/tickets',
     path: '/tickets',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedConfirmationBookingIdRoute =
   AuthenticatedConfirmationBookingIdRouteImport.update({
     id: '/confirmation/$bookingId',
@@ -155,6 +169,11 @@ const AuthenticatedTicketTicketIdRoute =
     path: '/ticket/$ticketId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicPosterSplatRoute = ApiPublicPosterSplatRouteImport.update({
+  id: '/api/public/poster/$',
+  path: '/api/public/poster/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -172,13 +191,16 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/admin/theaters': typeof AuthenticatedAdminTheatersRoute
   '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/staff/checkin': typeof AuthenticatedStaffCheckinRoute
   '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/staff/': typeof AuthenticatedStaffIndexRoute
+  '/api/public/poster/$': typeof ApiPublicPosterSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -194,13 +216,16 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/admin/theaters': typeof AuthenticatedAdminTheatersRoute
   '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/staff/checkin': typeof AuthenticatedStaffCheckinRoute
   '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/staff': typeof AuthenticatedStaffIndexRoute
+  '/api/public/poster/$': typeof ApiPublicPosterSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -220,13 +245,16 @@ export interface FileRoutesById {
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/_authenticated/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/_authenticated/admin/theaters': typeof AuthenticatedAdminTheatersRoute
   '/_authenticated/admin/tickets': typeof AuthenticatedAdminTicketsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/_authenticated/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/_authenticated/staff/checkin': typeof AuthenticatedStaffCheckinRoute
   '/_authenticated/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
+  '/api/public/poster/$': typeof ApiPublicPosterSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -246,13 +274,16 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/sessions'
     | '/admin/shows'
+    | '/admin/theaters'
     | '/admin/tickets'
+    | '/admin/users'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
     | '/staff/checkin'
     | '/ticket/$ticketId'
     | '/admin/'
     | '/staff/'
+    | '/api/public/poster/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -268,13 +299,16 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/sessions'
     | '/admin/shows'
+    | '/admin/theaters'
     | '/admin/tickets'
+    | '/admin/users'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
     | '/staff/checkin'
     | '/ticket/$ticketId'
     | '/admin'
     | '/staff'
+    | '/api/public/poster/$'
   id:
     | '__root__'
     | '/'
@@ -293,13 +327,16 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/reports'
     | '/_authenticated/admin/sessions'
     | '/_authenticated/admin/shows'
+    | '/_authenticated/admin/theaters'
     | '/_authenticated/admin/tickets'
+    | '/_authenticated/admin/users'
     | '/_authenticated/confirmation/$bookingId'
     | '/_authenticated/payment/$bookingId'
     | '/_authenticated/staff/checkin'
     | '/_authenticated/ticket/$ticketId'
     | '/_authenticated/admin/'
     | '/_authenticated/staff/'
+    | '/api/public/poster/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -309,6 +346,7 @@ export interface RootRouteChildren {
   BookingShowIdRoute: typeof BookingShowIdRoute
   SeatsShowIdRoute: typeof SeatsShowIdRoute
   ShowsIdRoute: typeof ShowsIdRoute
+  ApiPublicPosterSplatRoute: typeof ApiPublicPosterSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -432,11 +470,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminShowsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/theaters': {
+      id: '/_authenticated/admin/theaters'
+      path: '/theaters'
+      fullPath: '/admin/theaters'
+      preLoaderRoute: typeof AuthenticatedAdminTheatersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/tickets': {
       id: '/_authenticated/admin/tickets'
       path: '/tickets'
       fullPath: '/admin/tickets'
       preLoaderRoute: typeof AuthenticatedAdminTicketsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/confirmation/$bookingId': {
@@ -474,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTicketTicketIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/poster/$': {
+      id: '/api/public/poster/$'
+      path: '/api/public/poster/$'
+      fullPath: '/api/public/poster/$'
+      preLoaderRoute: typeof ApiPublicPosterSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -484,7 +543,9 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminSessionsRoute: typeof AuthenticatedAdminSessionsRoute
   AuthenticatedAdminShowsRoute: typeof AuthenticatedAdminShowsRoute
+  AuthenticatedAdminTheatersRoute: typeof AuthenticatedAdminTheatersRoute
   AuthenticatedAdminTicketsRoute: typeof AuthenticatedAdminTicketsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -495,7 +556,9 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
   AuthenticatedAdminSessionsRoute: AuthenticatedAdminSessionsRoute,
   AuthenticatedAdminShowsRoute: AuthenticatedAdminShowsRoute,
+  AuthenticatedAdminTheatersRoute: AuthenticatedAdminTheatersRoute,
   AuthenticatedAdminTicketsRoute: AuthenticatedAdminTicketsRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
@@ -546,6 +609,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookingShowIdRoute: BookingShowIdRoute,
   SeatsShowIdRoute: SeatsShowIdRoute,
   ShowsIdRoute: ShowsIdRoute,
+  ApiPublicPosterSplatRoute: ApiPublicPosterSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

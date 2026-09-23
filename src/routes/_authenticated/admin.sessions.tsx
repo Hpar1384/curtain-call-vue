@@ -19,6 +19,7 @@ import {
   inputClass,
 } from "@/components/admin/ui";
 import { toPersianNumber } from "@/lib/format";
+import { fromTehranLocalInput, sessionLabel, toTehranLocalInput } from "@/lib/session-time";
 
 export const Route = createFileRoute("/_authenticated/admin/sessions")({
   component: AdminSessions,
@@ -27,9 +28,8 @@ export const Route = createFileRoute("/_authenticated/admin/sessions")({
 type FormState = {
   id?: string;
   show_id: string;
-  date_label: string;
-  weekday_label: string;
-  time_label: string;
+  /** datetime-local value in Tehran time */
+  starts_local: string;
   sort_order: number;
 };
 
@@ -43,7 +43,8 @@ function AdminSessions() {
   const [form, setForm] = useState<FormState | null>(null);
 
   const save = useMutation({
-    mutationFn: (values: FormState) => adminSaveSession({ data: values }),
+    mutationFn: ({ starts_local, ...values }: FormState) =>
+      adminSaveSession({ data: { ...values, starts_at: fromTehranLocalInput(starts_local) } }),
     onSuccess: () => {
       toast.success("سانس ذخیره شد");
       setForm(null);
@@ -69,9 +70,7 @@ function AdminSessions() {
     setForm({
       id: s.id,
       show_id: s.show_id,
-      date_label: s.date_label,
-      weekday_label: s.weekday_label,
-      time_label: s.time_label,
+      starts_local: toTehranLocalInput(s.starts_at),
       sort_order: s.sort_order,
     });
 
@@ -85,9 +84,7 @@ function AdminSessions() {
           onClick={() =>
             setForm({
               show_id: shows.data[0]?.id ?? "",
-              date_label: "",
-              weekday_label: "",
-              time_label: "",
+              starts_local: "",
               sort_order: 0,
             })
           }
@@ -128,32 +125,20 @@ function AdminSessions() {
                 ))}
               </select>
             </Field>
-            <Field label="روز هفته">
+            <Field label="تاریخ و ساعت شروع (به وقت تهران)">
               <input
                 required
-                placeholder="شنبه"
+                type="datetime-local"
+                dir="ltr"
                 className={inputClass}
-                value={form.weekday_label}
-                onChange={(e) => setForm({ ...form, weekday_label: e.target.value })}
+                value={form.starts_local}
+                onChange={(e) => setForm({ ...form, starts_local: e.target.value })}
               />
-            </Field>
-            <Field label="تاریخ">
-              <input
-                required
-                placeholder="۲۰ شهریور"
-                className={inputClass}
-                value={form.date_label}
-                onChange={(e) => setForm({ ...form, date_label: e.target.value })}
-              />
-            </Field>
-            <Field label="ساعت">
-              <input
-                required
-                placeholder="۱۹:۰۰"
-                className={inputClass}
-                value={form.time_label}
-                onChange={(e) => setForm({ ...form, time_label: e.target.value })}
-              />
+              {form.starts_local && (
+                <span className="text-[11px] font-normal">
+                  {sessionLabel(fromTehranLocalInput(form.starts_local))}
+                </span>
+              )}
             </Field>
             <Field label="ترتیب نمایش">
               <input
@@ -182,7 +167,7 @@ function AdminSessions() {
               <div>
                 <p className="text-sm font-extrabold text-foreground">{s.showTitle}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {s.weekday_label} {s.date_label} · {s.time_label} · {s.hallName}
+                  {s.label} · {s.hallName}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   ظرفیت {toPersianNumber(s.capacity)} · فروخته‌شده {toPersianNumber(s.ticketsTotal)}{" "}

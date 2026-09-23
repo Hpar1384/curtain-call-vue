@@ -22,11 +22,13 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const tabs: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin", label: "داشبورد", exact: true },
   { to: "/admin/shows", label: "نمایش‌ها" },
+  { to: "/admin/theaters", label: "تئاترها" },
   { to: "/admin/halls", label: "سالن‌ها" },
   { to: "/admin/sessions", label: "سانس‌ها" },
   { to: "/admin/bookings", label: "رزروها" },
   { to: "/admin/tickets", label: "بلیت‌ها" },
   { to: "/admin/reports", label: "گزارش ورود" },
+  { to: "/admin/users", label: "کاربران" },
   { to: "/admin/audit", label: "فعالیت‌ها" },
 ];
 

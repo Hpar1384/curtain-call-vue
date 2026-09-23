@@ -2,9 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { PaymentResultDTO, TicketDTO } from "@/lib/payment-types";
+import { sessionLabels } from "@/lib/session-time";
 
 const ticketSelect =
-  "id, booking_id, ticket_code, qr_payload, seat_label, status, created_at, bookings(shows(title, poster_key, halls(name, theaters(name))), show_sessions(date_label, weekday_label, time_label))";
+  "id, booking_id, ticket_code, qr_payload, seat_label, status, created_at, bookings(shows(title, poster_key, halls(name, theaters(name))), show_sessions(starts_at))";
 
 type TicketRow = {
   id: string;
@@ -20,11 +21,7 @@ type TicketRow = {
       poster_key: string;
       halls: { name: string; theaters: { name: string } | null } | null;
     } | null;
-    show_sessions: {
-      date_label: string;
-      weekday_label: string;
-      time_label: string;
-    } | null;
+    show_sessions: { starts_at: string } | null;
   } | null;
 };
 
@@ -41,9 +38,7 @@ function toTicketDTO(row: TicketRow): TicketDTO {
     showTitle: show?.title ?? "",
     posterKey: show?.poster_key ?? "hamlet",
     venue: `${show?.halls?.name ?? ""} — ${show?.halls?.theaters?.name ?? ""}`,
-    date: row.bookings?.show_sessions?.date_label ?? "",
-    weekday: row.bookings?.show_sessions?.weekday_label ?? "",
-    time: row.bookings?.show_sessions?.time_label ?? "",
+    ...sessionLabels(row.bookings?.show_sessions?.starts_at),
   };
 }
 
