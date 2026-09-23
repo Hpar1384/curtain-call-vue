@@ -4,11 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   adminDeleteHall,
+  adminHallSeats,
   adminListHalls,
   adminListTheaters,
   adminSaveHall,
-} from "@/lib/admin.functions";
-import type { AdminHallDTO } from "@/lib/admin-types";
+} from "@/modules/admin/admin.functions";
+import type { AdminHallDTO } from "@/modules/admin/admin-types";
 import {
   Card,
   ErrorNote,
@@ -40,6 +41,7 @@ function AdminHalls() {
     queryFn: () => adminListTheaters(),
   });
   const [form, setForm] = useState<FormState | null>(null);
+  const [mapFor, setMapFor] = useState<string | null>(null);
 
   const save = useMutation({
     mutationFn: (values: FormState) => adminSaveHall({ data: values }),
@@ -99,6 +101,17 @@ function AdminHalls() {
             className="grid gap-3 sm:grid-cols-2"
             onSubmit={(e) => {
               e.preventDefault();
+              const current = form.id ? halls.data.find((x) => x.id === form.id) : undefined;
+              const dimsChanged =
+                current &&
+                (current.rows_count !== form.rows_count ||
+                  current.seats_per_row !== form.seats_per_row);
+              if (dimsChanged && current.layoutLocked) {
+                toast.error("این سالن رزرو ثبت‌شده دارد؛ تغییر چیدمان مجاز نیست");
+                return;
+              }
+              if (dimsChanged && !confirm("چیدمان صندلی‌ها دوباره ساخته می‌شود. ادامه می‌دهید؟"))
+                return;
               save.mutate(form);
             }}
           >
@@ -141,23 +154,17 @@ function AdminHalls() {
                 max={30}
                 className={inputClass}
                 value={form.seats_per_row}
-                onChange={(e) =>
-                  setForm({ ...form, seats_per_row: Number(e.target.value) })
-                }
+                onChange={(e) => setForm({ ...form, seats_per_row: Number(e.target.value) })}
               />
             </Field>
             <p className="text-xs text-muted-foreground sm:col-span-2">
-              با ذخیره، چیدمان صندلی‌های این سالن دوباره ساخته می‌شود.
+              تغییر تعداد ردیف/صندلی فقط برای سالن بدون رزرو ممکن است.
             </p>
             <div className="flex gap-2 sm:col-span-2">
               <button type="submit" className={buttonClass} disabled={save.isPending}>
                 ذخیره
               </button>
-              <button
-                type="button"
-                className={ghostButtonClass}
-                onClick={() => setForm(null)}
-              >
+              <button type="button" className={ghostButtonClass} onClick={() => setForm(null)}>
                 انصراف
               </button>
             </div>
@@ -174,17 +181,22 @@ function AdminHalls() {
                   {h.theaterName} — {h.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {toPersianNumber(h.rows_count)} ردیف ×{" "}
-                  {toPersianNumber(h.seats_per_row)} صندلی
+                  {toPersianNumber(h.rows_count)} ردیف × {toPersianNumber(h.seats_per_row)} صندلی ·
+                  ظرفیت {toPersianNumber(h.capacity)} · {toPersianNumber(h.showCount)} نمایش
+                  {h.layoutLocked && " · چیدمان قفل (دارای رزرو)"}
                 </p>
+                {mapFor === h.id && <SeatGrid hallId={h.id} />}
               </div>
               <div className="flex gap-2">
+                <button type="button" className={ghostButtonClass} onClick={() => startEdit(h)}>
+                  ویرایش
+                </button>
                 <button
                   type="button"
                   className={ghostButtonClass}
-                  onClick={() => startEdit(h)}
+                  onClick={() => setMapFor(mapFor === h.id ? null : h.id)}
                 >
-                  ویرایش چیدمان
+                  نقشه صندلی
                 </button>
                 <button
                   type="button"
@@ -200,6 +212,29 @@ function AdminHalls() {
           </Card>
         ))}
       </div>
+    </div>
+  );
+}
+
+function SeatGrid({ hallId }: { hallId: string }) {
+  const seats = useQuery({
+    queryKey: ["admin-hall-seats", hallId],
+    queryFn: () => adminHallSeats({ data: { hallId } }),
+  });
+  if (seats.isPending) return <Loading />;
+  if (seats.error) return <ErrorNote message={seats.error.message} />;
+  const rows = new Map<string, number[]>();
+  for (const s of seats.data) rows.set(s.row, [...(rows.get(s.row) ?? []), s.number]);
+  return (
+    <div className="mt-3 flex flex-col gap-1 overflow-x-auto">
+      {[...rows.entries()].map(([row, nums]) => (
+        <div key={row} className="flex items-center gap-1">
+          <span className="w-4 text-[10px] font-bold text-muted-foreground">{row}</span>
+          {nums.map((n) => (
+            <span key={n} className="h-4 w-4 rounded-sm bg-secondary" title={`${row}${n}`} />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

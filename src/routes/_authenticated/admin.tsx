@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { checkAdmin } from "@/lib/admin.functions";
+import { checkAdmin } from "@/modules/admin/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -26,6 +26,8 @@ const tabs: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin/sessions", label: "سانس‌ها" },
   { to: "/admin/bookings", label: "رزروها" },
   { to: "/admin/tickets", label: "بلیت‌ها" },
+  { to: "/admin/reports", label: "گزارش ورود" },
+  { to: "/admin/audit", label: "فعالیت‌ها" },
 ];
 
 function AdminLayout() {
@@ -42,9 +44,7 @@ function AdminLayout() {
     return (
       <div className="p-8">
         <h1 className="text-lg font-bold text-foreground">دسترسی مجاز نیست</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          این بخش فقط برای مدیران سامانه است.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">این بخش فقط برای مدیران سامانه است.</p>
         <Link to="/" className="mt-4 inline-block text-sm font-bold text-gold">
           بازگشت به خانه
         </Link>

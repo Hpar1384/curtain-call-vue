@@ -10,7 +10,8 @@ import type {
   AdminShowDTO,
   AdminStats,
   AdminTicketDTO,
-} from "@/lib/admin-types";
+  AdminAuditDTO,
+} from "@/modules/admin/admin-types";
 
 type AdminContext = {
   supabase: SupabaseClient<Database>;
@@ -54,7 +55,7 @@ export const adminListShows = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("shows")
       .select(
-        "id, slug, title, description, poster_key, director, genre, duration_minutes, age_rating, price, sort_order, hall_id, halls(name)",
+        "id, slug, title, description, poster_key, is_active, director, genre, duration_minutes, age_rating, price, sort_order, hall_id, halls(name)",
       )
       .order("sort_order", { ascending: true });
     if (error) throw new Error(error.message);
@@ -76,6 +77,7 @@ const showInput = z.object({
   price: z.number().int().min(0),
   hall_id: z.string().uuid(),
   sort_order: z.number().int().default(0),
+  is_active: z.boolean().default(true),
 });
 
 export const adminSaveShow = createServerFn({ method: "POST" })
@@ -119,9 +121,27 @@ export const adminListHalls = createServerFn({ method: "GET" })
       .select("id, name, rows_count, seats_per_row, theater_id, theaters(name)")
       .order("name", { ascending: true });
     if (error) throw new Error(error.message);
-    return ((data ?? []) as unknown as (AdminHallDTO & { theaters: { name: string } | null })[]).map(
-      (r) => ({ ...r, theaterName: r.theaters?.name ?? "" }),
+    const { data: ov, error: ovErr } = await context.supabase.rpc("admin_hall_overview");
+    if (ovErr) throw new Error(ovErr.message);
+    const byId = new Map(
+      (
+        (ov ?? []) as unknown as {
+          id: string;
+          capacity: number;
+          showCount: number;
+          layoutLocked: boolean;
+        }[]
+      ).map((o) => [o.id, o]),
     );
+    return (
+      (data ?? []) as unknown as (AdminHallDTO & { theaters: { name: string } | null })[]
+    ).map((r) => ({
+      ...r,
+      theaterName: r.theaters?.name ?? "",
+      capacity: byId.get(r.id)?.capacity ?? 0,
+      showCount: byId.get(r.id)?.showCount ?? 0,
+      layoutLocked: byId.get(r.id)?.layoutLocked ?? false,
+    }));
   });
 
 export const adminListTheaters = createServerFn({ method: "GET" })
@@ -195,15 +215,32 @@ export const adminListSessions = createServerFn({ method: "GET" })
       )
       .order("sort_order", { ascending: true });
     if (error) throw new Error(error.message);
+    const { data: ov, error: ovErr } = await context.supabase.rpc("admin_session_overview");
+    if (ovErr) throw new Error(ovErr.message);
+    type Ov = {
+      id: string;
+      capacity: number;
+      activeBookings: number;
+      ticketsTotal: number;
+      checkedIn: number;
+    };
+    const byId = new Map(((ov ?? []) as unknown as Ov[]).map((o) => [o.id, o]));
     return (
       (data ?? []) as unknown as (AdminSessionDTO & {
         shows: { title: string; halls: { name: string } | null } | null;
       })[]
-    ).map((r) => ({
-      ...r,
-      showTitle: r.shows?.title ?? "",
-      hallName: r.shows?.halls?.name ?? "",
-    }));
+    ).map((r) => {
+      const o = byId.get(r.id);
+      return {
+        ...r,
+        showTitle: r.shows?.title ?? "",
+        hallName: r.shows?.halls?.name ?? "",
+        capacity: o?.capacity ?? 0,
+        activeBookings: o?.activeBookings ?? 0,
+        ticketsTotal: o?.ticketsTotal ?? 0,
+        checkedIn: o?.checkedIn ?? 0,
+      };
+    });
   });
 
 const sessionInput = z.object({
@@ -240,10 +277,7 @@ export const adminDeleteSession = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     await assertAdmin(context);
-    const { error } = await context.supabase
-      .from("show_sessions")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("show_sessions").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -300,22 +334,12 @@ export const adminListBookings = createServerFn({ method: "GET" })
     }));
   });
 
-export const adminUpdateBookingStatus = createServerFn({ method: "POST" })
+export const adminCancelBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
-    z
-      .object({
-        id: z.string().uuid(),
-        status: z.enum(["pending", "confirmed", "cancelled"]),
-      })
-      .parse(input),
-  )
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     await assertAdmin(context);
-    const { error } = await context.supabase
-      .from("bookings")
-      .update({ status: data.status })
-      .eq("id", data.id);
+    const { error } = await context.supabase.rpc("admin_cancel_booking", { p_booking_id: data.id });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -363,5 +387,68 @@ export const adminListTickets = createServerFn({ method: "GET" })
       session: r.bookings?.show_sessions
         ? `${r.bookings.show_sessions.weekday_label} ${r.bookings.show_sessions.date_label} · ${r.bookings.show_sessions.time_label}`
         : "",
+    }));
+  });
+
+export const adminCancelTicket = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await assertAdmin(context);
+    const { error } = await context.supabase.rpc("cancel_ticket", { p_ticket_id: data.id });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Manual check-in by an admin — same atomic backend validation as the staff scanner. */
+export const adminManualCheckin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ code: z.string().min(1).max(200) }).parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: boolean; code?: string }> => {
+    await assertAdmin(context);
+    const { data: res, error } = await context.supabase.rpc("checkin_ticket", {
+      p_code: data.code,
+      p_session_id: null as unknown as string,
+    });
+    if (error) throw new Error(error.message);
+    return res as unknown as { ok: boolean; code?: string };
+  });
+
+/* ---------------------------------- seats --------------------------------- */
+
+export const adminHallSeats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ hallId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ row: string; number: number }[]> => {
+    await assertAdmin(context);
+    const { data: rows, error } = await context.supabase
+      .from("seats")
+      .select("row_label, seat_number")
+      .eq("hall_id", data.hallId)
+      .order("row_label")
+      .order("seat_number");
+    if (error) throw new Error(error.message);
+    return (rows ?? []).map((r) => ({ row: r.row_label, number: r.seat_number }));
+  });
+
+/* -------------------------------- audit log -------------------------------- */
+
+export const adminListAuditLogs = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminAuditDTO[]> => {
+    await assertAdmin(context);
+    const { data, error } = await context.supabase
+      .from("audit_logs")
+      .select("id, actor_email, action, entity, details, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r) => ({
+      id: r.id,
+      actor: r.actor_email ?? "—",
+      action: r.action,
+      entity: r.entity,
+      details: (r.details ?? {}) as Record<string, string | number | boolean | null>,
+      createdAt: r.created_at,
     }));
   });

@@ -7,8 +7,8 @@ import {
   adminListHalls,
   adminListShows,
   adminSaveShow,
-} from "@/lib/admin.functions";
-import type { AdminShowDTO } from "@/lib/admin-types";
+} from "@/modules/admin/admin.functions";
+import type { AdminShowDTO } from "@/modules/admin/admin-types";
 import {
   Card,
   ErrorNote,
@@ -39,6 +39,7 @@ type FormState = {
   price: number;
   hall_id: string;
   sort_order: number;
+  is_active: boolean;
 };
 
 const emptyForm: FormState = {
@@ -53,6 +54,7 @@ const emptyForm: FormState = {
   price: 0,
   hall_id: "",
   sort_order: 0,
+  is_active: true,
 };
 
 function AdminShows() {
@@ -92,8 +94,7 @@ function AdminShows() {
   if (shows.error) return <ErrorNote message={shows.error.message} />;
   if (halls.error) return <ErrorNote message={halls.error.message} />;
 
-  const startNew = () =>
-    setForm({ ...emptyForm, hall_id: halls.data[0]?.id ?? "" });
+  const startNew = () => setForm({ ...emptyForm, hall_id: halls.data[0]?.id ?? "" });
 
   const startEdit = (s: AdminShowDTO) =>
     setForm({
@@ -109,6 +110,7 @@ function AdminShows() {
       price: s.price,
       hall_id: s.hall_id,
       sort_order: s.sort_order,
+      is_active: s.is_active,
     });
 
   return (
@@ -179,9 +181,7 @@ function AdminShows() {
                 max={600}
                 className={inputClass}
                 value={form.duration_minutes}
-                onChange={(e) =>
-                  setForm({ ...form, duration_minutes: Number(e.target.value) })
-                }
+                onChange={(e) => setForm({ ...form, duration_minutes: Number(e.target.value) })}
               />
             </Field>
             <Field label="ردهٔ سنی">
@@ -222,6 +222,14 @@ function AdminShows() {
                 onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
               />
             </Field>
+            <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={form.is_active}
+                onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+              />
+              نمایش فعال (در اپ کاربر دیده و رزرو شود)
+            </label>
             <div className="sm:col-span-2">
               <Field label="خلاصه">
                 <textarea
@@ -236,11 +244,7 @@ function AdminShows() {
               <button type="submit" className={buttonClass} disabled={save.isPending}>
                 ذخیره
               </button>
-              <button
-                type="button"
-                className={ghostButtonClass}
-                onClick={() => setForm(null)}
-              >
+              <button type="button" className={ghostButtonClass} onClick={() => setForm(null)}>
                 انصراف
               </button>
             </div>
@@ -253,25 +257,57 @@ function AdminShows() {
           <Card key={s.id}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-sm font-extrabold text-foreground">{s.title}</p>
+                <p className="text-sm font-extrabold text-foreground">
+                  {s.title}
+                  {!s.is_active && (
+                    <span className="ms-2 rounded-full bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">
+                      غیرفعال
+                    </span>
+                  )}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {s.hallName} · {toPersianNumber(s.duration_minutes)} دقیقه ·{" "}
                   {formatPrice(s.price)} تومان
                 </p>
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  className={ghostButtonClass}
-                  onClick={() => startEdit(s)}
-                >
+                <button type="button" className={ghostButtonClass} onClick={() => startEdit(s)}>
                   ویرایش
                 </button>
                 <button
                   type="button"
                   className={ghostButtonClass}
+                  disabled={save.isPending}
+                  onClick={() =>
+                    save.mutate({
+                      id: s.id,
+                      slug: s.slug,
+                      title: s.title,
+                      description: s.description,
+                      poster_key: s.poster_key,
+                      director: s.director ?? "",
+                      genre: s.genre ?? "",
+                      duration_minutes: s.duration_minutes,
+                      age_rating: s.age_rating ?? "",
+                      price: s.price,
+                      hall_id: s.hall_id,
+                      sort_order: s.sort_order,
+                      is_active: !s.is_active,
+                    })
+                  }
+                >
+                  {s.is_active ? "غیرفعال کن" : "فعال کن"}
+                </button>
+                <button
+                  type="button"
+                  className={ghostButtonClass}
                   onClick={() => {
-                    if (confirm(`نمایش «${s.title}» حذف شود؟`)) remove.mutate(s.id);
+                    if (
+                      confirm(
+                        `نمایش «${s.title}» حذف شود؟ اگر سانس یا رزرو داشته باشد، حذف انجام نمی‌شود.`,
+                      )
+                    )
+                      remove.mutate(s.id);
                   }}
                 >
                   حذف

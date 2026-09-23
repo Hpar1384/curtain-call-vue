@@ -1,8 +1,20 @@
 export type AdminStats = {
-  shows: number;
-  sessions: number;
-  bookings: number;
+  activeShows: number;
+  upcomingSessions: number;
+  bookingsToday: number;
+  ticketsSold: number;
+  checkinsToday: number;
+  revenue: number;
   users: number;
+};
+
+export type AdminAuditDTO = {
+  id: string;
+  actor: string;
+  action: string;
+  entity: string;
+  details: Record<string, string | number | boolean | null>;
+  createdAt: string;
 };
 
 export type AdminShowDTO = {
@@ -11,6 +23,7 @@ export type AdminShowDTO = {
   title: string;
   description: string;
   poster_key: string;
+  is_active: boolean;
   director: string | null;
   genre: string | null;
   duration_minutes: number;
@@ -28,6 +41,9 @@ export type AdminHallDTO = {
   seats_per_row: number;
   theater_id: string;
   theaterName: string;
+  capacity: number;
+  showCount: number;
+  layoutLocked: boolean;
 };
 
 export type AdminSessionDTO = {
@@ -39,12 +55,16 @@ export type AdminSessionDTO = {
   sort_order: number;
   showTitle: string;
   hallName: string;
+  capacity: number;
+  activeBookings: number;
+  ticketsTotal: number;
+  checkedIn: number;
 };
 
 export type AdminBookingDTO = {
   id: string;
   userId: string;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "awaiting_payment" | "confirmed" | "cancelled";
   total: number;
   seatCount: number;
   createdAt: string;

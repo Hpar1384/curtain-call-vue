@@ -7,8 +7,8 @@ import {
   adminListSessions,
   adminListShows,
   adminSaveSession,
-} from "@/lib/admin.functions";
-import type { AdminSessionDTO } from "@/lib/admin-types";
+} from "@/modules/admin/admin.functions";
+import type { AdminSessionDTO } from "@/modules/admin/admin-types";
 import {
   Card,
   ErrorNote,
@@ -18,6 +18,7 @@ import {
   ghostButtonClass,
   inputClass,
 } from "@/components/admin/ui";
+import { toPersianNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/sessions")({
   component: AdminSessions,
@@ -101,6 +102,15 @@ function AdminSessions() {
             className="grid gap-3 sm:grid-cols-2"
             onSubmit={(e) => {
               e.preventDefault();
+              const current = form.id ? sessions.data.find((x) => x.id === form.id) : undefined;
+              if (
+                current &&
+                current.activeBookings > 0 &&
+                !confirm(
+                  `این سانس ${current.activeBookings} رزرو فعال دارد. تغییر تاریخ/ساعت روی بلیت خریداران اثر می‌گذارد. ادامه می‌دهید؟`,
+                )
+              )
+                return;
               save.mutate(form);
             }}
           >
@@ -157,11 +167,7 @@ function AdminSessions() {
               <button type="submit" className={buttonClass} disabled={save.isPending}>
                 ذخیره
               </button>
-              <button
-                type="button"
-                className={ghostButtonClass}
-                onClick={() => setForm(null)}
-              >
+              <button type="button" className={ghostButtonClass} onClick={() => setForm(null)}>
                 انصراف
               </button>
             </div>
@@ -178,19 +184,23 @@ function AdminSessions() {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {s.weekday_label} {s.date_label} · {s.time_label} · {s.hallName}
                 </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  ظرفیت {toPersianNumber(s.capacity)} · فروخته‌شده {toPersianNumber(s.ticketsTotal)}{" "}
+                  · رزرو فعال {toPersianNumber(s.activeBookings)}
+                </p>
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  className={ghostButtonClass}
-                  onClick={() => startEdit(s)}
-                >
+                <button type="button" className={ghostButtonClass} onClick={() => startEdit(s)}>
                   ویرایش
                 </button>
                 <button
                   type="button"
                   className={ghostButtonClass}
                   onClick={() => {
+                    if (s.activeBookings > 0 || s.ticketsTotal > 0) {
+                      toast.error("این سانس رزرو دارد و قابل حذف نیست");
+                      return;
+                    }
                     if (confirm("این سانس حذف شود؟")) remove.mutate(s.id);
                   }}
                 >

@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json
+          entity: string
+          entity_id: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity: string
+          entity_id?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity?: string
+          entity_id?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       booking_items: {
         Row: {
           active: boolean
@@ -353,6 +386,7 @@ export type Database = {
           genre: string | null
           hall_id: string
           id: string
+          is_active: boolean
           poster_key: string
           price: number
           slug: string
@@ -368,6 +402,7 @@ export type Database = {
           genre?: string | null
           hall_id: string
           id?: string
+          is_active?: boolean
           poster_key: string
           price?: number
           slug: string
@@ -383,6 +418,7 @@ export type Database = {
           genre?: string | null
           hall_id?: string
           id?: string
+          is_active?: boolean
           poster_key?: string
           price?: number
           slug?: string
@@ -500,6 +536,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_cancel_booking: {
+        Args: { p_booking_id: string }
+        Returns: undefined
+      }
+      admin_hall_overview: { Args: never; Returns: Json }
+      admin_session_overview: { Args: never; Returns: Json }
       admin_stats: { Args: never; Returns: Json }
       can_checkin: { Args: { _user_id: string }; Returns: boolean }
       cancel_ticket: { Args: { p_ticket_id: string }; Returns: undefined }

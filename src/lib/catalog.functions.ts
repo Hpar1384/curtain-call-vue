@@ -46,10 +46,7 @@ type ShowRow = {
   }[];
 };
 
-async function toShowDTO(
-  supabase: SupabaseClient<Database>,
-  row: ShowRow,
-): Promise<ShowDTO> {
+async function toShowDTO(supabase: SupabaseClient<Database>, row: ShowRow): Promise<ShowDTO> {
   const sessions = [...row.show_sessions]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((s) => ({
@@ -88,19 +85,16 @@ async function toShowDTO(
   };
 }
 
-export const listShows = createServerFn({ method: "GET" }).handler(
-  async (): Promise<ShowDTO[]> => {
-    const supabase = publicClient();
-    const { data, error } = await supabase
-      .from("shows")
-      .select(showSelect)
-      .order("sort_order", { ascending: true });
-    if (error) throw new Error(error.message);
-    return Promise.all(
-      ((data ?? []) as unknown as ShowRow[]).map((row) => toShowDTO(supabase, row)),
-    );
-  },
-);
+export const listShows = createServerFn({ method: "GET" }).handler(async (): Promise<ShowDTO[]> => {
+  const supabase = publicClient();
+  const { data, error } = await supabase
+    .from("shows")
+    .select(showSelect)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+  if (error) throw new Error(error.message);
+  return Promise.all(((data ?? []) as unknown as ShowRow[]).map((row) => toShowDTO(supabase, row)));
+});
 
 export const getShow = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ slug: z.string() }).parse(input))
@@ -117,9 +111,7 @@ export const getShow = createServerFn({ method: "GET" })
   });
 
 export const getSeatMap = createServerFn({ method: "GET" })
-  .inputValidator((input) =>
-    z.object({ sessionId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input) => z.object({ sessionId: z.string().uuid() }).parse(input))
   .handler(async ({ data }): Promise<SeatDTO[]> => {
     const supabase = publicClient();
     const { data: rows, error } = await supabase
@@ -128,11 +120,13 @@ export const getSeatMap = createServerFn({ method: "GET" })
       .eq("session_id", data.sessionId);
     if (error) throw new Error(error.message);
 
-    return ((rows ?? []) as unknown as {
-      id: string;
-      status: string;
-      seats: { row_label: string; seat_number: number } | null;
-    }[])
+    return (
+      (rows ?? []) as unknown as {
+        id: string;
+        status: string;
+        seats: { row_label: string; seat_number: number } | null;
+      }[]
+    )
       .filter((r) => r.seats)
       .map((r) => ({
         id: `${r.seats!.row_label}${r.seats!.seat_number}`,
@@ -141,7 +135,5 @@ export const getSeatMap = createServerFn({ method: "GET" })
         number: r.seats!.seat_number,
         status: r.status === "available" ? ("free" as const) : ("reserved" as const),
       }))
-      .sort((a, b) =>
-        a.row === b.row ? a.number - b.number : a.row.localeCompare(b.row),
-      );
+      .sort((a, b) => (a.row === b.row ? a.number - b.number : a.row.localeCompare(b.row)));
   });
