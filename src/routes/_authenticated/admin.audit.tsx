@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/admin/audit")({
 });
 
 function describe(details: Record<string, string | number | boolean | null>): string {
-  if ("from" in details) return `${String(details.from)} ← ${String(details.to)}`;
+  if ("from" in details) return `${String(details["from"])} ← ${String(details["to"])}`;
   return Object.values(details)
     .filter((v) => v !== null && v !== undefined && typeof v !== "object")
     .map(String)
