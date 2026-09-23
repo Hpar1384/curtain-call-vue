@@ -26,7 +26,9 @@ import { Route as AuthenticatedAdminHallsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as AuthenticatedAdminSessionsRouteImport } from './routes/_authenticated/admin.sessions'
 import { Route as AuthenticatedAdminShowsRouteImport } from './routes/_authenticated/admin.shows'
+import { Route as AuthenticatedAdminTheatersRouteImport } from './routes/_authenticated/admin.theaters'
 import { Route as AuthenticatedAdminTicketsRouteImport } from './routes/_authenticated/admin.tickets'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedConfirmationBookingIdRouteImport } from './routes/_authenticated/confirmation.$bookingId'
 import { Route as AuthenticatedPaymentBookingIdRouteImport } from './routes/_authenticated/payment.$bookingId'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
@@ -121,12 +123,23 @@ const AuthenticatedAdminShowsRoute = AuthenticatedAdminShowsRouteImport.update({
   path: '/shows',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminTheatersRoute =
+  AuthenticatedAdminTheatersRouteImport.update({
+    id: '/theaters',
+    path: '/theaters',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminTicketsRoute =
   AuthenticatedAdminTicketsRouteImport.update({
     id: '/tickets',
     path: '/tickets',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedConfirmationBookingIdRoute =
   AuthenticatedConfirmationBookingIdRouteImport.update({
     id: '/confirmation/$bookingId',
@@ -178,7 +191,9 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/admin/theaters': typeof AuthenticatedAdminTheatersRoute
   '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/staff/checkin': typeof AuthenticatedStaffCheckinRoute
@@ -201,7 +216,9 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/admin/theaters': typeof AuthenticatedAdminTheatersRoute
   '/admin/tickets': typeof AuthenticatedAdminTicketsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/staff/checkin': typeof AuthenticatedStaffCheckinRoute
@@ -228,7 +245,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/_authenticated/admin/shows': typeof AuthenticatedAdminShowsRoute
+  '/_authenticated/admin/theaters': typeof AuthenticatedAdminTheatersRoute
   '/_authenticated/admin/tickets': typeof AuthenticatedAdminTicketsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/confirmation/$bookingId': typeof AuthenticatedConfirmationBookingIdRoute
   '/_authenticated/payment/$bookingId': typeof AuthenticatedPaymentBookingIdRoute
   '/_authenticated/staff/checkin': typeof AuthenticatedStaffCheckinRoute
@@ -255,7 +274,9 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/sessions'
     | '/admin/shows'
+    | '/admin/theaters'
     | '/admin/tickets'
+    | '/admin/users'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
     | '/staff/checkin'
@@ -278,7 +299,9 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/sessions'
     | '/admin/shows'
+    | '/admin/theaters'
     | '/admin/tickets'
+    | '/admin/users'
     | '/confirmation/$bookingId'
     | '/payment/$bookingId'
     | '/staff/checkin'
@@ -304,7 +327,9 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/reports'
     | '/_authenticated/admin/sessions'
     | '/_authenticated/admin/shows'
+    | '/_authenticated/admin/theaters'
     | '/_authenticated/admin/tickets'
+    | '/_authenticated/admin/users'
     | '/_authenticated/confirmation/$bookingId'
     | '/_authenticated/payment/$bookingId'
     | '/_authenticated/staff/checkin'
@@ -445,11 +470,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminShowsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/theaters': {
+      id: '/_authenticated/admin/theaters'
+      path: '/theaters'
+      fullPath: '/admin/theaters'
+      preLoaderRoute: typeof AuthenticatedAdminTheatersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/tickets': {
       id: '/_authenticated/admin/tickets'
       path: '/tickets'
       fullPath: '/admin/tickets'
       preLoaderRoute: typeof AuthenticatedAdminTicketsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/confirmation/$bookingId': {
@@ -504,7 +543,9 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminSessionsRoute: typeof AuthenticatedAdminSessionsRoute
   AuthenticatedAdminShowsRoute: typeof AuthenticatedAdminShowsRoute
+  AuthenticatedAdminTheatersRoute: typeof AuthenticatedAdminTheatersRoute
   AuthenticatedAdminTicketsRoute: typeof AuthenticatedAdminTicketsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -515,7 +556,9 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
   AuthenticatedAdminSessionsRoute: AuthenticatedAdminSessionsRoute,
   AuthenticatedAdminShowsRoute: AuthenticatedAdminShowsRoute,
+  AuthenticatedAdminTheatersRoute: AuthenticatedAdminTheatersRoute,
   AuthenticatedAdminTicketsRoute: AuthenticatedAdminTicketsRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
