@@ -11,7 +11,11 @@ const posters: Record<string, string> = {
   veil: posterVeil,
 };
 
+export const BUILTIN_POSTERS = Object.keys(posters);
+
+/** Built-in key → bundled image; uploaded key ("upload/…") → served from storage. */
 export function posterFor(key: string): string {
+  if (key.startsWith("upload/")) return `/api/public/poster/${key}`;
   return posters[key] ?? posterHamlet;
 }
 

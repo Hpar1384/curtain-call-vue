@@ -32,6 +32,7 @@ import { Route as AuthenticatedPaymentBookingIdRouteImport } from './routes/_aut
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
 import { Route as AuthenticatedStaffCheckinRouteImport } from './routes/_authenticated/staff.checkin'
 import { Route as AuthenticatedTicketTicketIdRouteImport } from './routes/_authenticated/ticket.$ticketId'
+import { Route as ApiPublicPosterSplatRouteImport } from './routes/api/public/poster.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -155,6 +156,11 @@ const AuthenticatedTicketTicketIdRoute =
     path: '/ticket/$ticketId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicPosterSplatRoute = ApiPublicPosterSplatRouteImport.update({
+  id: '/api/public/poster/$',
+  path: '/api/public/poster/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/staff/': typeof AuthenticatedStaffIndexRoute
+  '/api/public/poster/$': typeof ApiPublicPosterSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/staff': typeof AuthenticatedStaffIndexRoute
+  '/api/public/poster/$': typeof ApiPublicPosterSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/_authenticated/ticket/$ticketId': typeof AuthenticatedTicketTicketIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
+  '/api/public/poster/$': typeof ApiPublicPosterSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/ticket/$ticketId'
     | '/admin/'
     | '/staff/'
+    | '/api/public/poster/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/ticket/$ticketId'
     | '/admin'
     | '/staff'
+    | '/api/public/poster/$'
   id:
     | '__root__'
     | '/'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ticket/$ticketId'
     | '/_authenticated/admin/'
     | '/_authenticated/staff/'
+    | '/api/public/poster/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -309,6 +321,7 @@ export interface RootRouteChildren {
   BookingShowIdRoute: typeof BookingShowIdRoute
   SeatsShowIdRoute: typeof SeatsShowIdRoute
   ShowsIdRoute: typeof ShowsIdRoute
+  ApiPublicPosterSplatRoute: typeof ApiPublicPosterSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -474,6 +487,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTicketTicketIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/poster/$': {
+      id: '/api/public/poster/$'
+      path: '/api/public/poster/$'
+      fullPath: '/api/public/poster/$'
+      preLoaderRoute: typeof ApiPublicPosterSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -546,6 +566,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookingShowIdRoute: BookingShowIdRoute,
   SeatsShowIdRoute: SeatsShowIdRoute,
   ShowsIdRoute: ShowsIdRoute,
+  ApiPublicPosterSplatRoute: ApiPublicPosterSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
