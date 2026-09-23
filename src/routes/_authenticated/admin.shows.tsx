@@ -19,12 +19,26 @@ import {
   inputClass,
 } from "@/components/admin/ui";
 import { formatPrice, toPersianNumber } from "@/lib/format";
+import { BUILTIN_POSTERS, posterFor } from "@/lib/booking-ui";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/shows")({
   component: AdminShows,
 });
 
-const posterKeys = ["hamlet", "seller", "rhinoceros", "veil"];
+const posterKeys = BUILTIN_POSTERS;
+
+async function uploadPoster(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) throw new Error("فقط فایل تصویری مجاز است");
+  if (file.size > 5 * 1024 * 1024) throw new Error("حجم تصویر باید کمتر از ۵ مگابایت باشد");
+  const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const path = `upload/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("posters")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw new Error("آپلود پوستر ناموفق بود");
+  return path;
+}
 
 type FormState = {
   id?: string;
@@ -62,6 +76,7 @@ function AdminShows() {
   const shows = useQuery({ queryKey: ["admin-shows"], queryFn: () => adminListShows() });
   const halls = useQuery({ queryKey: ["admin-halls"], queryFn: () => adminListHalls() });
   const [form, setForm] = useState<FormState | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const save = useMutation({
     mutationFn: (values: FormState) =>
@@ -148,17 +163,47 @@ function AdminShows() {
               />
             </Field>
             <Field label="پوستر">
-              <select
-                className={inputClass}
-                value={form.poster_key}
-                onChange={(e) => setForm({ ...form, poster_key: e.target.value })}
-              >
-                {posterKeys.map((k) => (
-                  <option key={k} value={k}>
-                    {k}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-3">
+                <img
+                  src={posterFor(form.poster_key)}
+                  alt="پیش‌نمایش پوستر"
+                  className="h-20 w-14 shrink-0 rounded-lg object-cover"
+                />
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    className="text-xs"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploading(true);
+                      try {
+                        const key = await uploadPoster(file);
+                        setForm((f) => (f ? { ...f, poster_key: key } : f));
+                        toast.success("پوستر آپلود شد");
+                      } catch (err) {
+                        toast.error((err as Error).message);
+                      } finally {
+                        setUploading(false);
+                      }
+                    }}
+                  />
+                  <select
+                    className={inputClass}
+                    value={posterKeys.includes(form.poster_key) ? form.poster_key : ""}
+                    onChange={(e) => e.target.value && setForm({ ...form, poster_key: e.target.value })}
+                  >
+                    <option value="">{uploading ? "در حال آپلود…" : "تصویر آپلودشده / انتخاب پیش‌فرض"}</option>
+                    {posterKeys.map((k) => (
+                      <option key={k} value={k}>
+                        {k}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </Field>
             <Field label="سالن">
               <select
@@ -241,7 +286,7 @@ function AdminShows() {
               </Field>
             </div>
             <div className="flex gap-2 sm:col-span-2">
-              <button type="submit" className={buttonClass} disabled={save.isPending}>
+              <button type="submit" className={buttonClass} disabled={save.isPending || uploading}>
                 ذخیره
               </button>
               <button type="button" className={ghostButtonClass} onClick={() => setForm(null)}>
