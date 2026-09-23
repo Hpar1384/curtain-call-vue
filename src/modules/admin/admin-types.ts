@@ -13,7 +13,7 @@ export type AdminAuditDTO = {
   actor: string;
   action: string;
   entity: string;
-  details: Record<string, unknown>;
+  details: Record<string, string | number | boolean | null>;
   createdAt: string;
 };
 

@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/admin/audit")({
   component: AdminAudit,
 });
 
-function describe(details: Record<string, unknown>): string {
+function describe(details: Record<string, string | number | boolean | null>): string {
   if ("from" in details) return `${String(details.from)} ← ${String(details.to)}`;
   return Object.values(details)
     .filter((v) => v !== null && v !== undefined && typeof v !== "object")
@@ -31,7 +31,9 @@ function AdminAudit() {
         <Card key={l.id}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-sm font-extrabold text-foreground">{auditLabel(l.entity, l.action)}</p>
+              <p className="text-sm font-extrabold text-foreground">
+                {auditLabel(l.entity, l.action)}
+              </p>
               <p className="mt-1 truncate text-xs text-muted-foreground">{describe(l.details)}</p>
             </div>
             <div className="text-end text-[11px] text-muted-foreground">

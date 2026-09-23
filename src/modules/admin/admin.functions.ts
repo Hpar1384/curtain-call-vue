@@ -124,17 +124,24 @@ export const adminListHalls = createServerFn({ method: "GET" })
     const { data: ov, error: ovErr } = await context.supabase.rpc("admin_hall_overview");
     if (ovErr) throw new Error(ovErr.message);
     const byId = new Map(
-      ((ov ?? []) as unknown as { id: string; capacity: number; showCount: number; layoutLocked: boolean }[]).map((o) => [o.id, o]),
+      (
+        (ov ?? []) as unknown as {
+          id: string;
+          capacity: number;
+          showCount: number;
+          layoutLocked: boolean;
+        }[]
+      ).map((o) => [o.id, o]),
     );
-    return ((data ?? []) as unknown as (AdminHallDTO & { theaters: { name: string } | null })[]).map(
-      (r) => ({
-        ...r,
-        theaterName: r.theaters?.name ?? "",
-        capacity: byId.get(r.id)?.capacity ?? 0,
-        showCount: byId.get(r.id)?.showCount ?? 0,
-        layoutLocked: byId.get(r.id)?.layoutLocked ?? false,
-      }),
-    );
+    return (
+      (data ?? []) as unknown as (AdminHallDTO & { theaters: { name: string } | null })[]
+    ).map((r) => ({
+      ...r,
+      theaterName: r.theaters?.name ?? "",
+      capacity: byId.get(r.id)?.capacity ?? 0,
+      showCount: byId.get(r.id)?.showCount ?? 0,
+      layoutLocked: byId.get(r.id)?.layoutLocked ?? false,
+    }));
   });
 
 export const adminListTheaters = createServerFn({ method: "GET" })
@@ -210,7 +217,13 @@ export const adminListSessions = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     const { data: ov, error: ovErr } = await context.supabase.rpc("admin_session_overview");
     if (ovErr) throw new Error(ovErr.message);
-    type Ov = { id: string; capacity: number; activeBookings: number; ticketsTotal: number; checkedIn: number };
+    type Ov = {
+      id: string;
+      capacity: number;
+      activeBookings: number;
+      ticketsTotal: number;
+      checkedIn: number;
+    };
     const byId = new Map(((ov ?? []) as unknown as Ov[]).map((o) => [o.id, o]));
     return (
       (data ?? []) as unknown as (AdminSessionDTO & {
@@ -264,10 +277,7 @@ export const adminDeleteSession = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     await assertAdmin(context);
-    const { error } = await context.supabase
-      .from("show_sessions")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("show_sessions").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -438,7 +448,7 @@ export const adminListAuditLogs = createServerFn({ method: "GET" })
       actor: r.actor_email ?? "—",
       action: r.action,
       entity: r.entity,
-      details: (r.details ?? {}) as Record<string, unknown>,
+      details: (r.details ?? {}) as Record<string, string | number | boolean | null>,
       createdAt: r.created_at,
     }));
   });

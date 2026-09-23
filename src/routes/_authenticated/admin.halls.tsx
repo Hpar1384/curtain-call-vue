@@ -154,9 +154,7 @@ function AdminHalls() {
                 max={30}
                 className={inputClass}
                 value={form.seats_per_row}
-                onChange={(e) =>
-                  setForm({ ...form, seats_per_row: Number(e.target.value) })
-                }
+                onChange={(e) => setForm({ ...form, seats_per_row: Number(e.target.value) })}
               />
             </Field>
             <p className="text-xs text-muted-foreground sm:col-span-2">
@@ -166,11 +164,7 @@ function AdminHalls() {
               <button type="submit" className={buttonClass} disabled={save.isPending}>
                 ذخیره
               </button>
-              <button
-                type="button"
-                className={ghostButtonClass}
-                onClick={() => setForm(null)}
-              >
+              <button type="button" className={ghostButtonClass} onClick={() => setForm(null)}>
                 انصراف
               </button>
             </div>
@@ -187,19 +181,14 @@ function AdminHalls() {
                   {h.theaterName} — {h.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {toPersianNumber(h.rows_count)} ردیف ×{" "}
-                  {toPersianNumber(h.seats_per_row)} صندلی · ظرفیت{" "}
-                  {toPersianNumber(h.capacity)} · {toPersianNumber(h.showCount)} نمایش
+                  {toPersianNumber(h.rows_count)} ردیف × {toPersianNumber(h.seats_per_row)} صندلی ·
+                  ظرفیت {toPersianNumber(h.capacity)} · {toPersianNumber(h.showCount)} نمایش
                   {h.layoutLocked && " · چیدمان قفل (دارای رزرو)"}
                 </p>
                 {mapFor === h.id && <SeatGrid hallId={h.id} />}
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  className={ghostButtonClass}
-                  onClick={() => startEdit(h)}
-                >
+                <button type="button" className={ghostButtonClass} onClick={() => startEdit(h)}>
                   ویرایش
                 </button>
                 <button

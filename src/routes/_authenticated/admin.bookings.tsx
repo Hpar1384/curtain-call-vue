@@ -52,7 +52,9 @@ function AdminBookings() {
             type="button"
             onClick={() => setFilter(f.key)}
             className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ${
-              filter === f.key ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+              filter === f.key
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground"
             }`}
           >
             {f.label}

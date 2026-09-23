@@ -44,9 +44,7 @@ function AdminLayout() {
     return (
       <div className="p-8">
         <h1 className="text-lg font-bold text-foreground">دسترسی مجاز نیست</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          این بخش فقط برای مدیران سامانه است.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">این بخش فقط برای مدیران سامانه است.</p>
         <Link to="/" className="mt-4 inline-block text-sm font-bold text-gold">
           بازگشت به خانه
         </Link>

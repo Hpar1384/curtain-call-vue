@@ -167,11 +167,7 @@ function AdminSessions() {
               <button type="submit" className={buttonClass} disabled={save.isPending}>
                 ذخیره
               </button>
-              <button
-                type="button"
-                className={ghostButtonClass}
-                onClick={() => setForm(null)}
-              >
+              <button type="button" className={ghostButtonClass} onClick={() => setForm(null)}>
                 انصراف
               </button>
             </div>
@@ -189,16 +185,12 @@ function AdminSessions() {
                   {s.weekday_label} {s.date_label} · {s.time_label} · {s.hallName}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  ظرفیت {toPersianNumber(s.capacity)} · فروخته‌شده {toPersianNumber(s.ticketsTotal)} ·
-                  رزرو فعال {toPersianNumber(s.activeBookings)}
+                  ظرفیت {toPersianNumber(s.capacity)} · فروخته‌شده {toPersianNumber(s.ticketsTotal)}{" "}
+                  · رزرو فعال {toPersianNumber(s.activeBookings)}
                 </p>
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  className={ghostButtonClass}
-                  onClick={() => startEdit(s)}
-                >
+                <button type="button" className={ghostButtonClass} onClick={() => startEdit(s)}>
                   ویرایش
                 </button>
                 <button

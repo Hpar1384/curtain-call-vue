@@ -94,8 +94,7 @@ function AdminShows() {
   if (shows.error) return <ErrorNote message={shows.error.message} />;
   if (halls.error) return <ErrorNote message={halls.error.message} />;
 
-  const startNew = () =>
-    setForm({ ...emptyForm, hall_id: halls.data[0]?.id ?? "" });
+  const startNew = () => setForm({ ...emptyForm, hall_id: halls.data[0]?.id ?? "" });
 
   const startEdit = (s: AdminShowDTO) =>
     setForm({
@@ -182,9 +181,7 @@ function AdminShows() {
                 max={600}
                 className={inputClass}
                 value={form.duration_minutes}
-                onChange={(e) =>
-                  setForm({ ...form, duration_minutes: Number(e.target.value) })
-                }
+                onChange={(e) => setForm({ ...form, duration_minutes: Number(e.target.value) })}
               />
             </Field>
             <Field label="ردهٔ سنی">
@@ -247,11 +244,7 @@ function AdminShows() {
               <button type="submit" className={buttonClass} disabled={save.isPending}>
                 ذخیره
               </button>
-              <button
-                type="button"
-                className={ghostButtonClass}
-                onClick={() => setForm(null)}
-              >
+              <button type="button" className={ghostButtonClass} onClick={() => setForm(null)}>
                 انصراف
               </button>
             </div>
@@ -278,11 +271,7 @@ function AdminShows() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  className={ghostButtonClass}
-                  onClick={() => startEdit(s)}
-                >
+                <button type="button" className={ghostButtonClass} onClick={() => startEdit(s)}>
                   ویرایش
                 </button>
                 <button
@@ -291,10 +280,18 @@ function AdminShows() {
                   disabled={save.isPending}
                   onClick={() =>
                     save.mutate({
-                      id: s.id, slug: s.slug, title: s.title, description: s.description,
-                      poster_key: s.poster_key, director: s.director ?? "", genre: s.genre ?? "",
-                      duration_minutes: s.duration_minutes, age_rating: s.age_rating ?? "",
-                      price: s.price, hall_id: s.hall_id, sort_order: s.sort_order,
+                      id: s.id,
+                      slug: s.slug,
+                      title: s.title,
+                      description: s.description,
+                      poster_key: s.poster_key,
+                      director: s.director ?? "",
+                      genre: s.genre ?? "",
+                      duration_minutes: s.duration_minutes,
+                      age_rating: s.age_rating ?? "",
+                      price: s.price,
+                      hall_id: s.hall_id,
+                      sort_order: s.sort_order,
                       is_active: !s.is_active,
                     })
                   }
@@ -305,7 +302,12 @@ function AdminShows() {
                   type="button"
                   className={ghostButtonClass}
                   onClick={() => {
-                    if (confirm(`نمایش «${s.title}» حذف شود؟ اگر سانس یا رزرو داشته باشد، حذف انجام نمی‌شود.`)) remove.mutate(s.id);
+                    if (
+                      confirm(
+                        `نمایش «${s.title}» حذف شود؟ اگر سانس یا رزرو داشته باشد، حذف انجام نمی‌شود.`,
+                      )
+                    )
+                      remove.mutate(s.id);
                   }}
                 >
                   حذف
