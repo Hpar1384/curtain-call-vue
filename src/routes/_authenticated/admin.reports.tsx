@@ -25,7 +25,7 @@ function AdminReports() {
               <div className="min-w-0">
                 <p className="text-sm font-extrabold text-foreground">{s.showTitle}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {s.weekday_label} {s.date_label} · {s.time_label} · {s.hallName}
+                  {s.label} · {s.hallName}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   بلیت {toPersianNumber(s.ticketsTotal)} · واردشده {toPersianNumber(s.checkedIn)}

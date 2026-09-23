@@ -76,7 +76,8 @@ function SeatsScreen() {
           : [...prev, id],
     );
 
-  const total = show.price * selected.length;
+  const priceOf = new Map(seats.map((s) => [s.id, s.price ?? show.price]));
+  const total = selected.reduce((sum, id) => sum + (priceOf.get(id) ?? show.price), 0);
 
   return (
     <AppScreen

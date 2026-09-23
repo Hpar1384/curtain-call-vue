@@ -38,7 +38,7 @@ function AdminBookings() {
 
   const now = Date.now();
   const rows = bookings.data
-    .map((b) => ({ ...b, bucket: bookingFilterOf(b.status, b.createdAt, now) }))
+    .map((b) => ({ ...b, bucket: bookingFilterOf(b.status, b.expiresAt, now) }))
     .filter((b) => filter === "all" || b.bucket === filter);
   const label = Object.fromEntries(filters.map((f) => [f.key, f.label]));
 
@@ -72,7 +72,7 @@ function AdminBookings() {
                 صندلی: {b.seats.join("، ")} ({toPersianNumber(b.seatCount)} بلیت)
               </p>
               <p className="mt-1 text-[11px] text-muted-foreground">
-                شماره: <span dir="ltr">{b.id.slice(0, 8)}</span> · کاربر: {b.userId.slice(0, 8)} ·{" "}
+                شماره: <span dir="ltr">{b.id.slice(0, 8)}</span> · کاربر: <span dir="ltr">{b.userEmail}</span> ·{" "}
                 {new Date(b.createdAt).toLocaleString("fa-IR")}
               </p>
             </div>
