@@ -49,9 +49,8 @@ export type AdminHallDTO = {
 export type AdminSessionDTO = {
   id: string;
   show_id: string;
-  date_label: string;
-  weekday_label: string;
-  time_label: string;
+  starts_at: string;
+  label: string;
   sort_order: number;
   showTitle: string;
   hallName: string;
@@ -64,6 +63,8 @@ export type AdminSessionDTO = {
 export type AdminBookingDTO = {
   id: string;
   userId: string;
+  userEmail: string;
+  expiresAt: string | null;
   status: "pending" | "awaiting_payment" | "confirmed" | "cancelled";
   total: number;
   seatCount: number;
@@ -76,10 +77,26 @@ export type AdminBookingDTO = {
 export type AdminTicketDTO = {
   id: string;
   userId: string;
+  userEmail: string;
+  usedAt: string | null;
   code: string;
   seat: string;
   status: "valid" | "used" | "cancelled";
   createdAt: string;
   showTitle: string;
   session: string;
+};
+
+export type AdminTheaterDTO = { id: string; name: string; city: string; hallCount: number };
+
+export type AppRole = "admin" | "checkin_operator" | "user";
+
+export type AdminUserDTO = {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: string;
+  lastSignInAt: string | null;
+  roles: AppRole[];
+  isSelf: boolean;
 };
