@@ -92,6 +92,7 @@ export type Database = {
       bookings: {
         Row: {
           created_at: string
+          expires_at: string | null
           guest_name: string | null
           guest_phone: string | null
           id: string
@@ -104,6 +105,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          expires_at?: string | null
           guest_name?: string | null
           guest_phone?: string | null
           id?: string
@@ -116,6 +118,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          expires_at?: string | null
           guest_name?: string | null
           guest_phone?: string | null
           id?: string
@@ -338,33 +341,33 @@ export type Database = {
       show_sessions: {
         Row: {
           created_at: string
-          date_label: string
+          date_label: string | null
           id: string
           show_id: string
           sort_order: number
-          starts_at: string | null
-          time_label: string
-          weekday_label: string
+          starts_at: string
+          time_label: string | null
+          weekday_label: string | null
         }
         Insert: {
           created_at?: string
-          date_label: string
+          date_label?: string | null
           id?: string
           show_id: string
           sort_order?: number
-          starts_at?: string | null
-          time_label: string
-          weekday_label: string
+          starts_at: string
+          time_label?: string | null
+          weekday_label?: string | null
         }
         Update: {
           created_at?: string
-          date_label?: string
+          date_label?: string | null
           id?: string
           show_id?: string
           sort_order?: number
-          starts_at?: string | null
-          time_label?: string
-          weekday_label?: string
+          starts_at?: string
+          time_label?: string | null
+          weekday_label?: string | null
         }
         Relationships: [
           {
@@ -467,6 +470,7 @@ export type Database = {
           status: string
           ticket_code: string
           updated_at: string
+          used_at: string | null
           user_id: string
         }
         Insert: {
@@ -479,6 +483,7 @@ export type Database = {
           status?: string
           ticket_code: string
           updated_at?: string
+          used_at?: string | null
           user_id: string
         }
         Update: {
@@ -491,6 +496,7 @@ export type Database = {
           status?: string
           ticket_code?: string
           updated_at?: string
+          used_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -553,6 +559,7 @@ export type Database = {
         Args: { p_seat_labels: string[]; p_session_id: string; p_slug: string }
         Returns: string
       }
+      expire_stale_bookings: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
