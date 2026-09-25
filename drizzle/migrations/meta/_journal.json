@@ -57,6 +57,13 @@
       "when": 1790368924974,
       "tag": "0007_booking_cancel_ticket_invariant",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790369336245,
+      "tag": "0008_schedule_expire_stale_bookings",
+      "breakpoints": true
     }
   ]
 }
