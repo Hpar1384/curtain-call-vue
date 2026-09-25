@@ -24,7 +24,7 @@ Server functions use `requireSupabaseAuth`, so RLS applies as the caller. Sensit
 
 **Payment** — `process_payment(booking, outcome)`: only `success` marks booking `confirmed` (paid) and issues one ticket per seat; `failed`/`cancelled` release seats. Gateway is mocked and must be replaced before launch.
 
-**Expiry** — `expire_stale_bookings()` cancels unpaid bookings past `expires_at`.
+**Expiry** — `expire_stale_bookings()` cancels unpaid bookings past `expires_at` and releases their seats atomically via `_release_bookings`. It only matches `pending`/`awaiting_payment` rows (paid/confirmed bookings are never touched) and uses `FOR UPDATE SKIP LOCKED`, so repeat runs are safe. It runs on demand inside `create_booking` and on a schedule: the pg_cron job `expire-stale-bookings` (`0 * * * *`, hourly) is provisioned by migration `0008_schedule_expire_stale_bookings.sql`.
 
 **Cancellation** — `cancel_ticket(ticket)` (owner/admin, not used tickets) and `admin_cancel_booking(booking)`. Admin cancel and expiry share `_release_bookings(ids[])` (tickets→cancelled, seats→available, items inactive, booking→cancelled).
 
