@@ -40,9 +40,17 @@ async function userEmails(ids: string[]): Promise<Map<string, string>> {
   return out;
 }
 
-async function listAllAuthUsers(): Promise<{ id: string; email: string; name: string; createdAt: string; lastSignInAt: string | null }[]> {
+async function listAllAuthUsers(): Promise<
+  { id: string; email: string; name: string; createdAt: string; lastSignInAt: string | null }[]
+> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const all: { id: string; email: string; name: string; createdAt: string; lastSignInAt: string | null }[] = [];
+  const all: {
+    id: string;
+    email: string;
+    name: string;
+    createdAt: string;
+    lastSignInAt: string | null;
+  }[] = [];
   for (let page = 1; page <= 20; page++) {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
     if (error) throw new Error(error.message);
@@ -244,9 +252,7 @@ export const adminListSessions = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("show_sessions")
-      .select(
-        "id, show_id, starts_at, sort_order, shows(title, halls(name))",
-      )
+      .select("id, show_id, starts_at, sort_order, shows(title, halls(name))")
       .order("starts_at", { ascending: true });
     if (error) throw new Error(error.message);
     const { data: ov, error: ovErr } = await context.supabase.rpc("admin_session_overview");
@@ -495,9 +501,14 @@ export const adminListTheatersFull = createServerFn({ method: "GET" })
       .select("id, name, city, halls(id)")
       .order("name", { ascending: true });
     if (error) throw new Error(error.message);
-    return ((data ?? []) as unknown as { id: string; name: string; city: string; halls: { id: string }[] }[]).map(
-      (t) => ({ id: t.id, name: t.name, city: t.city, hallCount: t.halls.length }),
-    );
+    return (
+      (data ?? []) as unknown as {
+        id: string;
+        name: string;
+        city: string;
+        halls: { id: string }[];
+      }[]
+    ).map((t) => ({ id: t.id, name: t.name, city: t.city, hallCount: t.halls.length }));
   });
 
 export const adminSaveTheater = createServerFn({ method: "POST" })
@@ -538,7 +549,9 @@ export const adminListUsers = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<AdminUserDTO[]> => {
     await assertAdmin(context);
     const users = await listAllAuthUsers();
-    const { data: roles, error } = await context.supabase.from("user_roles").select("user_id, role");
+    const { data: roles, error } = await context.supabase
+      .from("user_roles")
+      .select("user_id, role");
     if (error) throw new Error(error.message);
     const byUser = new Map<string, AppRole[]>();
     for (const r of roles ?? []) {
@@ -568,7 +581,10 @@ export const adminSetUserRole = createServerFn({ method: "POST" })
     if (data.enabled) {
       const { error } = await context.supabase
         .from("user_roles")
-        .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role", ignoreDuplicates: true });
+        .upsert(
+          { user_id: data.userId, role: data.role },
+          { onConflict: "user_id,role", ignoreDuplicates: true },
+        );
       if (error) throw new Error(error.message);
     } else {
       const { error } = await context.supabase

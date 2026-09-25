@@ -542,6 +542,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _release_bookings: { Args: { p_ids: string[] }; Returns: undefined }
       admin_cancel_booking: {
         Args: { p_booking_id: string }
         Returns: undefined

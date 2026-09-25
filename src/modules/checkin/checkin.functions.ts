@@ -1,11 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type {
-  CheckinResult,
-  SessionStats,
-  StaffSessionDTO,
-} from "@/modules/checkin/checkin-types";
+import type { CheckinResult, SessionStats, StaffSessionDTO } from "@/modules/checkin/checkin-types";
 import { sessionLabels } from "@/lib/session-time";
 
 export const checkStaffAccess = createServerFn({ method: "GET" })
@@ -27,10 +23,9 @@ type SessionRow = {
 export const listStaffSessions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<StaffSessionDTO[]> => {
-    const { data: allowed, error: roleError } = await context.supabase.rpc(
-      "can_checkin",
-      { _user_id: context.userId },
-    );
+    const { data: allowed, error: roleError } = await context.supabase.rpc("can_checkin", {
+      _user_id: context.userId,
+    });
     if (roleError) throw new Error(roleError.message);
     if (allowed !== true) throw new Error("اجازهٔ دسترسی ندارید");
 
@@ -51,9 +46,7 @@ export const listStaffSessions = createServerFn({ method: "GET" })
 export const checkinTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z
-      .object({ code: z.string().min(1).max(200), sessionId: z.string().uuid() })
-      .parse(input),
+    z.object({ code: z.string().min(1).max(200), sessionId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }): Promise<CheckinResult> => {
     const { data: result, error } = await context.supabase.rpc("checkin_ticket", {

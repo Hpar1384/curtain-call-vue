@@ -43,6 +43,13 @@
       "when": 1790197068969,
       "tag": "0005_hardening_expiry_starts_at_checkin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790363034565,
+      "tag": "0006_integrity_indexes_cancel_dedupe",
+      "breakpoints": true
     }
   ]
 }
