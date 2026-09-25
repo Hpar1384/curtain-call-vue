@@ -61,7 +61,7 @@ function Index() {
       </header>
 
       {shows.length === 1 ? (
-        <SingleShowHero show={shows[0]} />
+        <SingleShowHero show={shows[0]!} />
       ) : (
         <section className="px-5 pt-4">
           <h2 className="text-sm font-bold text-muted-foreground">
