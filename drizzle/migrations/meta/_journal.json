@@ -50,6 +50,13 @@
       "when": 1790363034565,
       "tag": "0006_integrity_indexes_cancel_dedupe",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790368924974,
+      "tag": "0007_booking_cancel_ticket_invariant",
+      "breakpoints": true
     }
   ]
 }
