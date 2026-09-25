@@ -18,10 +18,10 @@ export const Route = createFileRoute("/contact")({
 function Contact() {
   return (
     <InfoScreen title="تماس با ما">
-      <ActionRow href={`tel:${VENUE.phone}`} icon="📞" label="تلفن" value={VENUE.phone} />
-      <ActionRow href={`mailto:${VENUE.email}`} icon="✉️" label="ایمیل" value={VENUE.email} />
-      <ActionRow href="https://instagram.com/curtaincall" icon="📸" label="اینستاگرام" value="@curtaincall" />
-      <ActionRow href="https://t.me/curtaincall" icon="✈️" label="تلگرام" value="@curtaincall" />
+      <ActionRow href="#" icon="📞" label="تلفن" value={VENUE.phone} />
+      <ActionRow href="#" icon="✉️" label="ایمیل" value={VENUE.email} />
+      <ActionRow href="#" icon="📸" label="اینستاگرام" value="لینک شبکه اجتماعی" />
+      <ActionRow href="#" icon="✈️" label="تلگرام" value="لینک شبکه اجتماعی" />
       <ActionRow href={VENUE.mapUrl} icon="📍" label="آدرس و مسیریابی" value={VENUE.address} />
     </InfoScreen>
   );

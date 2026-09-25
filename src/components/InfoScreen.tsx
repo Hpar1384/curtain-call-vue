@@ -63,13 +63,10 @@ export function ActionRow({
 }
 
 export const VENUE = {
-  name: "تئاتر شهر",
-  address: "تهران، خیابان انقلاب، چهارراه ولیعصر، پارک دانشجو",
-  phone: "021-66460592",
-  email: "info@curtaincall.app",
-  mapUrl: "https://www.google.com/maps/search/?api=1&query=35.7009,51.4072",
-  hours: [
-    ["شنبه تا چهارشنبه", "۱۶:۰۰ تا ۲۲:۰۰"],
-    ["پنجشنبه و جمعه", "۱۴:۰۰ تا ۲۳:۰۰"],
-  ] as const,
+  name: "نام مجموعه",
+  address: "آدرس مجموعه",
+  phone: "اطلاعات تماس",
+  email: "اطلاعات تماس",
+  mapUrl: "#",
+  hours: [["روزهای هفته", "ساعات کاری"]] as const,
 };
