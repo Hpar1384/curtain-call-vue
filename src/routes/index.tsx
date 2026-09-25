@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { listShows } from "@/lib/catalog.functions";
-import { toShow } from "@/lib/shows";
+import { formatPrice, toPersianNumber, toShow, type Show } from "@/lib/shows";
 import { ShowCard } from "@/components/ShowCard";
 import { BottomNav } from "@/components/BottomNav";
 
@@ -60,19 +60,68 @@ function Index() {
         </span>
       </header>
 
-      <section className="px-5 pt-4">
-        <h2 className="text-sm font-bold text-muted-foreground">
-          نمایش‌های در حال اجرا
-        </h2>
-        <div className="mt-3 flex flex-col gap-3 pb-28">
-          {shows.map((show) => (
-            <ShowCard key={show.id} show={show} />
-          ))}
-        </div>
-      </section>
+      {shows.length === 1 ? (
+        <SingleShowHero show={shows[0]!} />
+      ) : (
+        <section className="px-5 pt-4">
+          <h2 className="text-sm font-bold text-muted-foreground">
+            نمایش‌های در حال اجرا
+          </h2>
+          <div className="mt-3 flex flex-col gap-3 pb-28">
+            {shows.map((show) => (
+              <ShowCard key={show.id} show={show} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <BottomNav />
     </div>
+  );
+}
+
+function SingleShowHero({ show }: { show: Show }) {
+  const soldOut = show.availableSeats === 0;
+  return (
+    <section className="px-5 pb-28 pt-4">
+      <div className="overflow-hidden rounded-3xl bg-card">
+        <img
+          src={show.poster}
+          alt={`پوستر نمایش ${show.title}`}
+          width={768}
+          height={1024}
+          className="aspect-[4/5] w-full object-cover"
+        />
+        <div className="space-y-4 p-5">
+          <div>
+            <h2 className="text-2xl font-extrabold text-foreground">{show.title}</h2>
+            <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+              {show.description}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-secondary px-4 py-3">
+            <p className="text-[11px] text-muted-foreground">سانس بعدی</p>
+            <p className="mt-1 text-sm font-bold text-foreground">
+              {show.date} · {show.time}
+            </p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">{show.venue}</p>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              {soldOut ? "تکمیل ظرفیت" : `${toPersianNumber(show.availableSeats)} صندلی آزاد`}
+            </span>
+            <span className="font-extrabold text-gold">{formatPrice(show.price)} تومان</span>
+          </div>
+          <Link
+            to="/shows/$id"
+            params={{ id: show.id }}
+            className="flex h-14 w-full items-center justify-center rounded-2xl bg-primary text-base font-extrabold text-primary-foreground active:scale-[0.98]"
+          >
+            {soldOut ? "مشاهدهٔ نمایش" : "رزرو بلیت"}
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
 

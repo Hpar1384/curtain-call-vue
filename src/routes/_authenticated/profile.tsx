@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import type React from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { listMyBookings } from "@/lib/booking.functions";
 import { toPersianNumber } from "@/lib/shows";
@@ -62,16 +63,14 @@ function ProfileScreen() {
 
       <div className="space-y-4 px-5 pb-28 pt-3">
         <div className="flex items-center gap-3 rounded-2xl bg-card p-4">
-          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-soft text-2xl">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gold-soft text-2xl">
             🎭
           </span>
           <div className="min-w-0">
             <p className="truncate text-base font-bold text-foreground" dir="ltr">
               {user?.email ?? "کاربر"}
             </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              حساب کاربری فعال
-            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">حساب کاربری فعال</p>
           </div>
         </div>
 
@@ -80,9 +79,22 @@ function ProfileScreen() {
           <Stat label="بلیت‌ها" value={toPersianNumber(tickets)} />
         </div>
 
+        <Section title="اطلاعات شخصی">
+          <Field label="نام و نام خانوادگی" value="به‌زودی" />
+          <Field label="ایمیل" value={user?.email ?? "—"} ltr />
+          <Field label="شماره موبایل" value="به‌زودی" />
+          <Field label="تاریخ تولد" value="به‌زودی" />
+        </Section>
+
+        <Section title="Curtain Call">
+          <NavRow to="/about" icon="🏛️" label="درباره ما" />
+          <NavRow to="/contact" icon="📞" label="تماس با ما" />
+          <NavRow to="/support" icon="💛" label="حمایت از ما" />
+        </Section>
+
         <button
           onClick={signOut}
-          className="w-full rounded-2xl bg-card py-3.5 text-sm font-extrabold text-destructive"
+          className="h-14 w-full rounded-2xl bg-card text-sm font-extrabold text-destructive active:scale-[0.98]"
         >
           خروج از حساب
         </button>
@@ -90,6 +102,36 @@ function ProfileScreen() {
 
       <BottomNav />
     </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="mb-2 px-1 text-xs font-bold text-muted-foreground">{title}</h2>
+      <div className="divide-y divide-border overflow-hidden rounded-2xl bg-card">{children}</div>
+    </section>
+  );
+}
+
+function Field({ label, value, ltr }: { label: string; value: string; ltr?: boolean }) {
+  return (
+    <div className="flex min-h-14 items-center justify-between gap-3 px-4">
+      <span className="text-sm text-foreground">{label}</span>
+      <span className="truncate text-xs text-muted-foreground" dir={ltr ? "ltr" : undefined}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function NavRow({ to, icon, label }: { to: "/about" | "/contact" | "/support"; icon: string; label: string }) {
+  return (
+    <Link to={to} className="flex min-h-14 items-center gap-3 px-4 active:bg-secondary">
+      <span className="text-lg">{icon}</span>
+      <span className="flex-1 text-sm font-bold text-foreground">{label}</span>
+      <span className="text-muted-foreground">‹</span>
+    </Link>
   );
 }
 
