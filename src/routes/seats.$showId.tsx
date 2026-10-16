@@ -97,7 +97,7 @@ function SeatsScreen() {
         <p className="text-center text-xs text-muted-foreground">
           {session.weekday} {session.date} · {session.time}
         </p>
-        <SeatMap seats={seats} selected={selected} onToggle={toggle} />
+        <SeatMap seats={seats} selected={selected} onToggle={toggle} basePrice={show.price} />
       </div>
 
       <StickyBar>
