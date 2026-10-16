@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/tickets")({
   },
   errorComponent: ({ error }) => (
     <div role="alert" className="p-6 text-sm text-muted-foreground">
-      خطا در دریافت بلیت‌ها: {error.message}
+      خطا در دریافت بلیت‌ها: {error instanceof Error ? error.message : String(error)}
     </div>
   ),
   notFoundComponent: () => (

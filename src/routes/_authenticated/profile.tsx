@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
     ]),
   errorComponent: ({ error }) => (
     <div role="alert" className="p-6 text-sm text-muted-foreground">
-      خطا در دریافت پروفایل: {error.message}
+      خطا در دریافت پروفایل: {error instanceof Error ? error.message : String(error)}
     </div>
   ),
   notFoundComponent: () => (

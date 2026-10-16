@@ -33,7 +33,7 @@ export const Route = createFileRoute("/seats/$showId")({
   },
   errorComponent: ({ error }) => (
     <div role="alert" className="p-6 text-sm text-muted-foreground">
-      خطا در دریافت صندلی‌ها: {error.message}
+      خطا در دریافت صندلی‌ها: {error instanceof Error ? error.message : String(error)}
     </div>
   ),
   notFoundComponent: () => (
