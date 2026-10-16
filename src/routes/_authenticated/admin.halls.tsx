@@ -8,6 +8,9 @@ import {
   adminListHalls,
   adminListTheaters,
   adminSaveHall,
+  adminSetHallCurved,
+  adminUpdateSeatLayout,
+  type AdminSeatDTO,
 } from "@/modules/admin/admin.functions";
 import type { AdminHallDTO } from "@/modules/admin/admin-types";
 import {
@@ -216,25 +219,114 @@ function AdminHalls() {
   );
 }
 
+const zoneClass: Record<AdminSeatDTO["zone"], string> = {
+  standard: "bg-secondary",
+  vip: "bg-gold/70",
+  economy: "bg-muted-foreground/40",
+};
+
 function SeatGrid({ hallId }: { hallId: string }) {
-  const seats = useQuery({
+  const qc = useQueryClient();
+  const q = useQuery({
     queryKey: ["admin-hall-seats", hallId],
     queryFn: () => adminHallSeats({ data: { hallId } }),
   });
-  if (seats.isPending) return <Loading />;
-  if (seats.error) return <ErrorNote message={seats.error.message} />;
-  const rows = new Map<string, number[]>();
-  for (const s of seats.data) rows.set(s.row, [...(rows.get(s.row) ?? []), s.number]);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const update = useMutation({
+    mutationFn: (patch: Omit<Parameters<typeof adminUpdateSeatLayout>[0]["data"], "hallId" | "seatIds">) =>
+      adminUpdateSeatLayout({ data: { hallId, seatIds: [...picked], ...patch } }),
+    onSuccess: () => {
+      toast.success("چیدمان ذخیره شد");
+      setPicked(new Set());
+      void qc.invalidateQueries({ queryKey: ["admin-hall-seats", hallId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const curved = useMutation({
+    mutationFn: (v: boolean) => adminSetHallCurved({ data: { hallId, curved: v } }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["admin-hall-seats", hallId] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  if (q.isPending) return <Loading />;
+  if (q.error) return <ErrorNote message={q.error.message} />;
+  const seats = q.data.seats;
+  const rows = new Map<string, AdminSeatDTO[]>();
+  for (const s of seats) rows.set(s.row, [...(rows.get(s.row) ?? []), s]);
+  const toggle = (id: string) =>
+    setPicked((p) => {
+      const n = new Set(p);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  const pickRow = (row: string) =>
+    setPicked((p) => {
+      const n = new Set(p);
+      for (const s of rows.get(row) ?? []) n.add(s.id);
+      return n;
+    });
+  const has = picked.size > 0;
+  const btn = ghostButtonClass + " disabled:opacity-40";
+
   return (
-    <div className="mt-3 flex flex-col gap-1 overflow-x-auto">
-      {[...rows.entries()].map(([row, nums]) => (
-        <div key={row} className="flex items-center gap-1">
-          <span className="w-4 text-[10px] font-bold text-muted-foreground">{row}</span>
-          {nums.map((n) => (
-            <span key={n} className="h-4 w-4 rounded-sm bg-secondary" title={`${row}${n}`} />
-          ))}
-        </div>
-      ))}
+    <div className="mt-3 space-y-3">
+      <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={q.data.curved}
+          onChange={(e) => curved.mutate(e.target.checked)}
+        />
+        چیدمان منحنی (ردیف‌ها به شکل قوس نمایش داده شوند)
+      </label>
+      <p className="text-[11px] text-muted-foreground">
+        صندلی‌ها را انتخاب کن (یا روی حرف ردیف بزن تا کل ردیف انتخاب شود)، سپس بخش/ناحیه را تعیین کن. این کار صندلی
+        حذف یا اضافه نمی‌کند و رزروها دست‌نخورده می‌مانند؛ قیمت فقط برای صندلی‌های آزاد سانس‌های آینده به‌روز می‌شود.
+      </p>
+      <div className="flex flex-col gap-1 overflow-x-auto pb-1">
+        {[...rows.entries()].map(([row, list]) => (
+          <div key={row} className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => pickRow(row)}
+              className="w-5 text-[10px] font-bold text-muted-foreground"
+            >
+              {row}
+            </button>
+            {list.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                title={`${row}${s.number}`}
+                onClick={() => toggle(s.id)}
+                style={s.aisleAfter ? { marginInlineEnd: "0.6rem" } : undefined}
+                className={
+                  "h-5 w-5 shrink-0 rounded-sm text-[8px] " +
+                  zoneClass[s.zone] +
+                  (s.section === "balcony" ? " rounded-full" : "") +
+                  (picked.has(s.id) ? " ring-2 ring-primary" : "")
+                }
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-secondary" />عادی</span>
+        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-gold/70" />VIP</span>
+        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-muted-foreground/40" />اقتصادی</span>
+        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-secondary" />بالکن</span>
+        <span>· {toPersianNumber(picked.size)} انتخاب</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" disabled={!has} className={btn} onClick={() => update.mutate({ zone: "vip" })}>VIP</button>
+        <button type="button" disabled={!has} className={btn} onClick={() => update.mutate({ zone: "standard" })}>عادی</button>
+        <button type="button" disabled={!has} className={btn} onClick={() => update.mutate({ zone: "economy" })}>اقتصادی</button>
+        <button type="button" disabled={!has} className={btn} onClick={() => update.mutate({ section: "balcony" })}>بالکن</button>
+        <button type="button" disabled={!has} className={btn} onClick={() => update.mutate({ section: "main" })}>سالن اصلی</button>
+        <button type="button" disabled={!has} className={btn} onClick={() => update.mutate({ aisleAfter: true })}>راهرو بعد از صندلی</button>
+        <button type="button" disabled={!has} className={btn} onClick={() => update.mutate({ aisleAfter: false })}>حذف راهرو</button>
+        <button type="button" disabled={!has} className={btn} onClick={() => setPicked(new Set())}>لغو انتخاب</button>
+      </div>
     </div>
   );
 }
