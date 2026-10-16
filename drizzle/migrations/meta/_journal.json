@@ -64,6 +64,13 @@
       "when": 1790369336245,
       "tag": "0008_schedule_expire_stale_bookings",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792142951774,
+      "tag": "0009_0009_user_profiles",
+      "breakpoints": true
     }
   ]
 }
