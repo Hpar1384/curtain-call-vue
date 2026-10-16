@@ -71,6 +71,13 @@
       "when": 1792142951774,
       "tag": "0009_0009_user_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792143535324,
+      "tag": "0010_0010_seat_layout_zones",
+      "breakpoints": true
     }
   ]
 }
