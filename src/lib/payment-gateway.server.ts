@@ -25,7 +25,7 @@ export interface PaymentGateway {
   id: string;
   mode: PaymentMode;
   request(input: { paymentId: string; amount: number; callbackUrl: string }): Promise<RequestResult>;
-  verify(input: { authority: string; amount: number; testOutcome?: PaymentOutcome }): Promise<VerifyResult>;
+  verify(input: { authority: string; amount: number; testOutcome?: PaymentOutcome | undefined }): Promise<VerifyResult>;
 }
 
 /**
