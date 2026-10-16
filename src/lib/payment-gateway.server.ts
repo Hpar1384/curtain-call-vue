@@ -1,38 +1,59 @@
 import type { PaymentOutcome } from "@/lib/payment-types";
 
-export type ChargeRequest = {
-  bookingId: string;
-  amount: number;
-  /** Test mode only: which outcome the sandbox gateway should simulate. */
-  simulate: PaymentOutcome;
+export type PaymentMode = "test" | "live";
+
+export type RequestResult = {
+  /** Gateway token identifying this transaction (e.g. Zarinpal "authority"). */
+  authority: string;
+  /** Where to send the customer. null = no redirect needed (test gateway). */
+  redirectUrl: string | null;
 };
 
-export type ChargeResult = {
+export type VerifyResult = {
   outcome: PaymentOutcome;
-  providerReference: string;
+  /** Gateway's own reference (e.g. Zarinpal ref_id). Empty when not successful. */
+  gatewayRef: string;
 };
 
 /**
- * Payment abstraction. A real gateway (Zarinpal, Stripe, ...) can implement the
- * same interface later without touching routes, server functions or the DB layer.
+ * Two-step gateway contract used by real Iranian gateways (Zarinpal, IDPay, ...):
+ *  1. request(): register the amount with the gateway, get an authority + redirect URL.
+ *  2. verify(): AFTER the customer returns, ask the gateway server-to-server whether
+ *     the money was really captured. Only verify() decides the outcome — never the browser.
  */
 export interface PaymentGateway {
   id: string;
-  charge(request: ChargeRequest): Promise<ChargeResult>;
+  mode: PaymentMode;
+  request(input: { paymentId: string; amount: number; callbackUrl: string }): Promise<RequestResult>;
+  verify(input: { authority: string; amount: number; testOutcome?: PaymentOutcome | undefined }): Promise<VerifyResult>;
 }
 
-const mockGateway: PaymentGateway = {
-  id: "mock",
-  async charge({ simulate }) {
-    // Sandbox: no network call, the caller decides the simulated outcome.
-    await new Promise((r) => setTimeout(r, 300));
+/**
+ * TEST gateway. No money moves. The tester picks the outcome on the payment page.
+ * Every payment it settles is stored with mode = 'test' and must never be counted as real revenue.
+ */
+const testGateway: PaymentGateway = {
+  id: "test",
+  mode: "test",
+  async request({ paymentId }) {
+    return { authority: `TEST-${paymentId}`, redirectUrl: null };
+  },
+  async verify({ testOutcome }) {
+    const outcome = testOutcome ?? "failed";
     return {
-      outcome: simulate,
-      providerReference: `MOCKGW-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+      outcome,
+      gatewayRef:
+        outcome === "success"
+          ? `TEST-${Math.random().toString(36).slice(2, 10).toUpperCase()}`
+          : "",
     };
   },
 };
 
+/**
+ * Returns the active gateway. A live gateway is used only when its credentials are configured;
+ * none is configured yet, so the app always runs in clearly labelled test mode.
+ */
 export function getPaymentGateway(): PaymentGateway {
-  return mockGateway;
+  return testGateway;
 }

@@ -36,3 +36,9 @@ Server functions use `requireSupabaseAuth`, so RLS applies as the caller. Sensit
 
 ## Data integrity
 Bookings, booking_items, tickets, payments and check_ins use `ON DELETE RESTRICT`; bookings are never hard-deleted (no DELETE grant). Direct UPDATE of bookings/tickets is revoked; only RPCs change status.
+
+## Payments (server-verified)
+Flow: `payBooking` → `start_payment` (user, ownership checked) → `gateway.request` → `gateway.verify` → `finalize_payment` (service role only, idempotent, one success per booking).
+`payments.mode` is `test` or `live`. Only the test gateway exists today; test payments are never real money.
+A real gateway implements `PaymentGateway` in `src/lib/payment-gateway.server.ts`, returns a `redirectUrl`, and verifies in a callback route under `src/routes/api/public/`.
+If money is captured for a booking that already expired, the payment is kept with `needs_refund = true` and an audit entry.

@@ -4,6 +4,8 @@ export type PaymentResultDTO = {
   paymentId: string;
   status: PaymentOutcome;
   reference: string;
+  mode: "test" | "live";
+  orphaned?: boolean;
 };
 
 export type TicketDTO = {

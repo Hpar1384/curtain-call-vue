@@ -130,8 +130,11 @@ function PaymentScreen() {
           </p>
         ) : (
           <div className="space-y-2">
+            <p className="rounded-2xl border border-gold/40 bg-gold-soft p-3 text-xs font-bold text-foreground">
+              حالت آزمایشی — هیچ مبلغ واقعی دریافت نمی‌شود و این پرداخت واقعی محسوب نمی‌شود.
+            </p>
             <p className="text-xs font-bold text-muted-foreground">
-              درگاه آزمایشی — نتیجهٔ تراکنش را انتخاب کن
+              نتیجهٔ تراکنش آزمایشی را انتخاب کن
             </p>
             {modes.map((m) => (
               <button

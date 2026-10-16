@@ -42,6 +42,12 @@ function toTicketDTO(row: TicketRow): TicketDTO {
   };
 }
 
+/**
+ * Pay for a booking. Flow:
+ *   start_payment (as the user, RLS-checked ownership) → gateway.request → gateway.verify
+ *   → finalize_payment (service role only). The browser can never declare a payment successful.
+ * In test mode the chosen `simulate` outcome is passed only to the TEST gateway's verify step.
+ */
 export const payBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
@@ -54,28 +60,48 @@ export const payBooking = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<PaymentResultDTO> => {
     const { getPaymentGateway } = await import("@/lib/payment-gateway.server");
-
-    const { data: booking, error: bookingError } = await context.supabase
-      .from("bookings")
-      .select("id, total_price, status")
-      .eq("id", data.bookingId)
-      .maybeSingle();
-    if (bookingError) throw new Error(bookingError.message);
-    if (!booking) throw new Error("رزرو یافت نشد");
-
     const gateway = getPaymentGateway();
-    const result = await gateway.charge({
-      bookingId: data.bookingId,
-      amount: booking.total_price,
-      simulate: data.simulate,
-    });
 
-    const { data: rpc, error } = await context.supabase.rpc("process_payment", {
+    const { data: started, error: startErr } = await context.supabase.rpc("start_payment", {
       p_booking_id: data.bookingId,
-      p_outcome: result.outcome,
+      p_provider: gateway.id,
+      p_mode: gateway.mode,
     });
-    if (error) throw new Error(error.message);
-    return rpc as unknown as PaymentResultDTO;
+    if (startErr) throw new Error(startErr.message);
+    const { paymentId, amount } = started as unknown as { paymentId: string; amount: number };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const req = await gateway.request({ paymentId, amount, callbackUrl: "" });
+    const { error: authErr } = await supabaseAdmin.rpc("attach_payment_authority", {
+      p_payment_id: paymentId,
+      p_authority: req.authority,
+    });
+    if (authErr) throw new Error("ثبت تراکنش ناموفق بود");
+
+    if (req.redirectUrl) {
+      // Live gateways: the customer is redirected and verification happens in the callback route.
+      throw new Error("درگاه واقعی هنوز پیکربندی نشده است");
+    }
+
+    let verified;
+    try {
+      verified = await gateway.verify({
+        authority: req.authority,
+        amount,
+        testOutcome: gateway.mode === "test" ? data.simulate : undefined,
+      });
+    } catch (e) {
+      console.error("payment verify failed", e);
+      verified = { outcome: "failed" as const, gatewayRef: "" };
+    }
+
+    const { data: fin, error } = await supabaseAdmin.rpc("finalize_payment", {
+      p_payment_id: paymentId,
+      p_outcome: verified.outcome,
+      p_gateway_ref: verified.gatewayRef,
+    });
+    if (error) throw new Error("ثبت نتیجهٔ پرداخت ناموفق بود");
+    return fin as unknown as PaymentResultDTO;
   });
 
 export const listMyTickets = createServerFn({ method: "GET" })

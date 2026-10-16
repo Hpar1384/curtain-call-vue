@@ -13,3 +13,4 @@
 - New schema changes go only in `drizzle/migrations/`; `supabase/migrations/` is frozen history — single source of truth avoids drift.
 - Booking/ticket status changes only via SECURITY DEFINER RPCs; shared seat release lives in `_release_bookings` — avoids duplicated cancel logic.
 - Financial rows (bookings, items, tickets, payments, check_ins) use ON DELETE RESTRICT — paid data must never cascade-delete.
+- Payment outcomes are settled only by server-only `finalize_payment` after the gateway's server-side verify step; users can only call `start_payment` — the browser must never decide payment success.
