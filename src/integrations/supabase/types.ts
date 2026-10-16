@@ -188,6 +188,7 @@ export type Database = {
       halls: {
         Row: {
           created_at: string
+          curved: boolean
           id: string
           name: string
           rows_count: number
@@ -196,6 +197,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          curved?: boolean
           id?: string
           name: string
           rows_count?: number
@@ -204,6 +206,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          curved?: boolean
           id?: string
           name?: string
           rows_count?: number
@@ -302,25 +305,34 @@ export type Database = {
       }
       seats: {
         Row: {
+          aisle_after: boolean
           created_at: string
           hall_id: string
           id: string
           row_label: string
           seat_number: number
+          section: string
+          zone: string
         }
         Insert: {
+          aisle_after?: boolean
           created_at?: string
           hall_id: string
           id?: string
           row_label: string
           seat_number: number
+          section?: string
+          zone?: string
         }
         Update: {
+          aisle_after?: boolean
           created_at?: string
           hall_id?: string
           id?: string
           row_label?: string
           seat_number?: number
+          section?: string
+          zone?: string
         }
         Relationships: [
           {
@@ -422,6 +434,7 @@ export type Database = {
           description: string
           director: string | null
           duration_minutes: number
+          economy_price: number | null
           genre: string | null
           hall_id: string
           id: string
@@ -431,6 +444,7 @@ export type Database = {
           slug: string
           sort_order: number
           title: string
+          vip_price: number | null
         }
         Insert: {
           age_rating?: string | null
@@ -438,6 +452,7 @@ export type Database = {
           description?: string
           director?: string | null
           duration_minutes?: number
+          economy_price?: number | null
           genre?: string | null
           hall_id: string
           id?: string
@@ -447,6 +462,7 @@ export type Database = {
           slug: string
           sort_order?: number
           title: string
+          vip_price?: number | null
         }
         Update: {
           age_rating?: string | null
@@ -454,6 +470,7 @@ export type Database = {
           description?: string
           director?: string | null
           duration_minutes?: number
+          economy_price?: number | null
           genre?: string | null
           hall_id?: string
           id?: string
@@ -463,6 +480,7 @@ export type Database = {
           slug?: string
           sort_order?: number
           title?: string
+          vip_price?: number | null
         }
         Relationships: [
           {
@@ -584,6 +602,7 @@ export type Database = {
         Returns: undefined
       }
       admin_hall_overview: { Args: never; Returns: Json }
+      admin_reprice_hall: { Args: { p_hall_id: string }; Returns: number }
       admin_session_overview: { Args: never; Returns: Json }
       admin_stats: { Args: never; Returns: Json }
       can_checkin: { Args: { _user_id: string }; Returns: boolean }
@@ -613,6 +632,10 @@ export type Database = {
         Returns: undefined
       }
       staff_session_stats: { Args: { p_session_id: string }; Returns: Json }
+      zone_price: {
+        Args: { p_show_id: string; p_zone: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "checkin_operator"

@@ -51,6 +51,8 @@ type FormState = {
   duration_minutes: number;
   age_rating: string;
   price: number;
+  vip_price: number | null;
+  economy_price: number | null;
   hall_id: string;
   sort_order: number;
   is_active: boolean;
@@ -66,6 +68,8 @@ const emptyForm: FormState = {
   duration_minutes: 90,
   age_rating: "",
   price: 0,
+  vip_price: null,
+  economy_price: null,
   hall_id: "",
   sort_order: 0,
   is_active: true,
@@ -123,6 +127,8 @@ function AdminShows() {
       duration_minutes: s.duration_minutes,
       age_rating: s.age_rating ?? "",
       price: s.price,
+      vip_price: s.vip_price,
+      economy_price: s.economy_price,
       hall_id: s.hall_id,
       sort_order: s.sort_order,
       is_active: s.is_active,
@@ -259,6 +265,28 @@ function AdminShows() {
                 onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
               />
             </Field>
+            <Field label="قیمت VIP (خالی = قیمت پایه)">
+              <input
+                type="number"
+                min={0}
+                className={inputClass}
+                value={form.vip_price ?? ""}
+                onChange={(e) =>
+                  setForm({ ...form, vip_price: e.target.value === "" ? null : Number(e.target.value) })
+                }
+              />
+            </Field>
+            <Field label="قیمت اقتصادی (خالی = قیمت پایه)">
+              <input
+                type="number"
+                min={0}
+                className={inputClass}
+                value={form.economy_price ?? ""}
+                onChange={(e) =>
+                  setForm({ ...form, economy_price: e.target.value === "" ? null : Number(e.target.value) })
+                }
+              />
+            </Field>
             <Field label="ترتیب نمایش">
               <input
                 type="number"
@@ -335,6 +363,8 @@ function AdminShows() {
                       duration_minutes: s.duration_minutes,
                       age_rating: s.age_rating ?? "",
                       price: s.price,
+                      vip_price: s.vip_price,
+                      economy_price: s.economy_price,
                       hall_id: s.hall_id,
                       sort_order: s.sort_order,
                       is_active: !s.is_active,

@@ -29,6 +29,8 @@ export type AdminShowDTO = {
   duration_minutes: number;
   age_rating: string | null;
   price: number;
+  vip_price: number | null;
+  economy_price: number | null;
   sort_order: number;
   hall_id: string;
   hallName: string;

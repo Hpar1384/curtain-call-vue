@@ -111,7 +111,7 @@ export const getSeatMap = createServerFn({ method: "GET" })
     await supabase.rpc("expire_stale_bookings");
     const { data: rows, error } = await supabase
       .from("show_seats")
-      .select("id, status, price, seats(row_label, seat_number)")
+      .select("id, status, price, seats(row_label, seat_number, section, zone, aisle_after, halls(curved))")
       .eq("session_id", data.sessionId);
     if (error) throw new Error(error.message);
 
@@ -120,7 +120,7 @@ export const getSeatMap = createServerFn({ method: "GET" })
         id: string;
         status: string;
         price: number | null;
-        seats: { row_label: string; seat_number: number } | null;
+        seats: { row_label: string; seat_number: number; section: string; zone: string; aisle_after: boolean; halls: { curved: boolean } | null } | null;
       }[]
     )
       .filter((r) => r.seats)
@@ -130,6 +130,10 @@ export const getSeatMap = createServerFn({ method: "GET" })
         row: r.seats!.row_label,
         number: r.seats!.seat_number,
         price: r.price,
+        section: r.seats!.section === "balcony" ? ("balcony" as const) : ("main" as const),
+        zone: (["vip", "economy"].includes(r.seats!.zone) ? r.seats!.zone : "standard") as SeatDTO["zone"],
+        aisleAfter: r.seats!.aisle_after,
+        curved: r.seats!.halls?.curved ?? true,
         status: r.status === "available" ? ("free" as const) : ("reserved" as const),
       }))
       .sort((a, b) => (a.row === b.row ? a.number - b.number : a.row.localeCompare(b.row)));

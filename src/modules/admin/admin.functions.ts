@@ -97,7 +97,7 @@ export const adminListShows = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("shows")
       .select(
-        "id, slug, title, description, poster_key, is_active, director, genre, duration_minutes, age_rating, price, sort_order, hall_id, halls(name)",
+        "id, slug, title, description, poster_key, is_active, director, genre, duration_minutes, age_rating, price, vip_price, economy_price, sort_order, hall_id, halls(name)",
       )
       .order("sort_order", { ascending: true });
     if (error) throw new Error(error.message);
@@ -117,6 +117,8 @@ const showInput = z.object({
   duration_minutes: z.number().int().min(1).max(600),
   age_rating: z.string().nullable().default(null),
   price: z.number().int().min(0),
+  vip_price: z.number().int().min(0).nullable().default(null),
+  economy_price: z.number().int().min(0).nullable().default(null),
   hall_id: z.string().uuid(),
   sort_order: z.number().int().default(0),
   is_active: z.boolean().default(true),
@@ -131,6 +133,8 @@ export const adminSaveShow = createServerFn({ method: "POST" })
     if (id) {
       const { error } = await context.supabase.from("shows").update(values).eq("id", id);
       if (error) throw new Error(error.message);
+      const { error: rpErr } = await context.supabase.rpc("admin_reprice_hall", { p_hall_id: values.hall_id });
+      if (rpErr) throw new Error(rpErr.message);
       return { id };
     }
     const { data: row, error } = await context.supabase
@@ -453,19 +457,84 @@ export const adminManualCheckin = createServerFn({ method: "POST" })
 
 /* ---------------------------------- seats --------------------------------- */
 
+export type AdminSeatDTO = {
+  id: string;
+  row: string;
+  number: number;
+  section: "main" | "balcony";
+  zone: "standard" | "vip" | "economy";
+  aisleAfter: boolean;
+};
+
 export const adminHallSeats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ hallId: z.string().uuid() }).parse(input))
-  .handler(async ({ data, context }): Promise<{ row: string; number: number }[]> => {
+  .handler(async ({ data, context }): Promise<{ curved: boolean; seats: AdminSeatDTO[] }> => {
     await assertAdmin(context);
-    const { data: rows, error } = await context.supabase
-      .from("seats")
-      .select("row_label, seat_number")
-      .eq("hall_id", data.hallId)
-      .order("row_label")
-      .order("seat_number");
+    const [{ data: rows, error }, { data: hall, error: hallErr }] = await Promise.all([
+      context.supabase
+        .from("seats")
+        .select("id, row_label, seat_number, section, zone, aisle_after")
+        .eq("hall_id", data.hallId)
+        .order("row_label")
+        .order("seat_number"),
+      context.supabase.from("halls").select("curved").eq("id", data.hallId).single(),
+    ]);
     if (error) throw new Error(error.message);
-    return (rows ?? []).map((r) => ({ row: r.row_label, number: r.seat_number }));
+    if (hallErr) throw new Error(hallErr.message);
+    return {
+      curved: hall.curved,
+      seats: (rows ?? []).map((r) => ({
+        id: r.id,
+        row: r.row_label,
+        number: r.seat_number,
+        section: r.section as AdminSeatDTO["section"],
+        zone: r.zone as AdminSeatDTO["zone"],
+        aisleAfter: r.aisle_after,
+      })),
+    };
+  });
+
+const seatLayoutInput = z.object({
+  hallId: z.string().uuid(),
+  seatIds: z.array(z.string().uuid()).min(1).max(1000),
+  section: z.enum(["main", "balcony"]).optional(),
+  zone: z.enum(["standard", "vip", "economy"]).optional(),
+  aisleAfter: z.boolean().optional(),
+});
+
+/** Changes only seat metadata (section/zone/aisle); never adds/removes seats, so bookings are untouched. */
+export const adminUpdateSeatLayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => seatLayoutInput.parse(input))
+  .handler(async ({ data, context }): Promise<{ repriced: number }> => {
+    await assertAdmin(context);
+    const patch: { section?: string; zone?: string; aisle_after?: boolean } = {};
+    if (data.section) patch.section = data.section;
+    if (data.zone) patch.zone = data.zone;
+    if (data.aisleAfter !== undefined) patch.aisle_after = data.aisleAfter;
+    if (Object.keys(patch).length === 0) return { repriced: 0 };
+    const { error } = await context.supabase
+      .from("seats")
+      .update(patch)
+      .eq("hall_id", data.hallId)
+      .in("id", data.seatIds);
+    if (error) throw new Error(error.message);
+    const { data: n, error: rpErr } = await context.supabase.rpc("admin_reprice_hall", {
+      p_hall_id: data.hallId,
+    });
+    if (rpErr) throw new Error(rpErr.message);
+    return { repriced: n ?? 0 };
+  });
+
+export const adminSetHallCurved = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ hallId: z.string().uuid(), curved: z.boolean() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await assertAdmin(context);
+    const { error } = await context.supabase.from("halls").update({ curved: data.curved }).eq("id", data.hallId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 /* -------------------------------- audit log -------------------------------- */
