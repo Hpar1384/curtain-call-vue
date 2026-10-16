@@ -233,7 +233,7 @@ function SeatGrid({ hallId }: { hallId: string }) {
   });
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const update = useMutation({
-    mutationFn: (patch: Omit<Parameters<typeof adminUpdateSeatLayout>[0]["data"], "hallId" | "seatIds">) =>
+    mutationFn: (patch: { zone?: AdminSeatDTO["zone"]; section?: AdminSeatDTO["section"]; aisleAfter?: boolean }) =>
       adminUpdateSeatLayout({ data: { hallId, seatIds: [...picked], ...patch } }),
     onSuccess: () => {
       toast.success("چیدمان ذخیره شد");
