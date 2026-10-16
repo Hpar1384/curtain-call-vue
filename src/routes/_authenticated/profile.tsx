@@ -154,3 +154,69 @@ function Stat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+const inputClass =
+  "w-full rounded-xl bg-secondary px-3 py-3 text-sm text-foreground outline-none ring-gold/40 focus:ring-2";
+
+function ProfileForm() {
+  const { data } = useSuspenseQuery(profileQueryOptions);
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState<ProfileInput>(data);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => setForm(data), [data]);
+
+  const set = (k: keyof ProfileInput) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    try {
+      await updateMyProfile({ data: form });
+      await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      toast.success("پروفایل ذخیره شد");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "ذخیره ناموفق بود");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const row = (id: keyof ProfileInput, label: string, opts: { ltr?: boolean; placeholder?: string; inputMode?: "numeric" | "tel" } = {}) => (
+    <label htmlFor={id} className="block px-4 py-3">
+      <span className="mb-1.5 block text-xs font-bold text-muted-foreground">{label}</span>
+      <input
+        id={id}
+        value={form[id]}
+        onChange={set(id)}
+        dir={opts.ltr ? "ltr" : undefined}
+        inputMode={opts.inputMode}
+        placeholder={opts.placeholder}
+        className={inputClass}
+      />
+    </label>
+  );
+
+  return (
+    <form onSubmit={save} className="space-y-4">
+      <Section title="اطلاعات شخصی">
+        {row("firstName", "نام")}
+        {row("lastName", "نام خانوادگی")}
+        {row("phone", "شماره موبایل", { ltr: true, inputMode: "tel", placeholder: "09xxxxxxxxx" })}
+      </Section>
+      <Section title="اطلاعات حساب برای بازگشت وجه">
+        {row("refundHolder", "نام صاحب حساب")}
+        {row("refundIban", "شماره شبا", { ltr: true, placeholder: "IR000000000000000000000000" })}
+        {row("refundCard", "شماره کارت", { ltr: true, inputMode: "numeric", placeholder: "16 رقم" })}
+      </Section>
+      <button
+        type="submit"
+        disabled={saving}
+        className="h-14 w-full rounded-2xl bg-primary text-sm font-extrabold text-primary-foreground disabled:opacity-50 active:scale-[0.98]"
+      >
+        {saving ? "در حال ذخیره…" : "ذخیرهٔ تغییرات"}
+      </button>
+    </form>
+  );
+}
