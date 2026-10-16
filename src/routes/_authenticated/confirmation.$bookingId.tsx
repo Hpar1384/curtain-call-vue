@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/confirmation/$bookingId")(
   },
   errorComponent: ({ error }) => (
     <div role="alert" className="p-6 text-sm text-muted-foreground">
-      خطا در دریافت رزرو: {error.message}
+      خطا در دریافت رزرو: {error instanceof Error ? error.message : String(error)}
     </div>
   ),
   notFoundComponent: () => (

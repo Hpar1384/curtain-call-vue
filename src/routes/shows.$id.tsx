@@ -23,7 +23,7 @@ export const Route = createFileRoute("/shows/$id")({
   },
   errorComponent: ({ error }) => (
     <div role="alert" className="p-6 text-sm text-muted-foreground">
-      خطا در دریافت نمایش: {error.message}
+      خطا در دریافت نمایش: {error instanceof Error ? error.message : String(error)}
     </div>
   ),
   notFoundComponent: () => (

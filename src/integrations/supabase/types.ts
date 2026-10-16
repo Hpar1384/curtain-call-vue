@@ -264,6 +264,42 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          refund_account_holder: string
+          refund_card_number: string | null
+          refund_iban: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          first_name?: string
+          id: string
+          last_name?: string
+          phone?: string | null
+          refund_account_holder?: string
+          refund_card_number?: string | null
+          refund_iban?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          refund_account_holder?: string
+          refund_card_number?: string | null
+          refund_iban?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       seats: {
         Row: {
           created_at: string

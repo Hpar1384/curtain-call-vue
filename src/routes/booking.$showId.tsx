@@ -34,7 +34,7 @@ export const Route = createFileRoute("/booking/$showId")({
   },
   errorComponent: ({ error }) => (
     <div role="alert" className="p-6 text-sm text-muted-foreground">
-      خطا در دریافت اطلاعات رزرو: {error.message}
+      خطا در دریافت اطلاعات رزرو: {error instanceof Error ? error.message : String(error)}
     </div>
   ),
   notFoundComponent: () => (
