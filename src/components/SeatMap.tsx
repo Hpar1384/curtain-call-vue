@@ -60,7 +60,7 @@ export function SeatMap({
                   const rowSeats = list.filter((s) => s.row === row);
                   const mid = (rowSeats.length - 1) / 2 || 1;
                   return (
-                    <div key={row} className="flex items-center justify-center gap-1.5">
+                    <div key={row} className="flex items-center justify-center gap-1">
                       <span className="w-4 text-center text-[10px] font-bold text-muted-foreground">{row}</span>
                       {rowSeats.map((seat, i) => {
                         const d = (i - mid) / mid;
@@ -151,7 +151,7 @@ function SeatButton({
         transform: lift ? `translateY(${lift}px)` : undefined,
       }}
       className={
-        "h-7 w-7 shrink-0 rounded-md text-[10px] font-bold transition-transform active:scale-90 " +
+        "h-[26px] w-[26px] shrink-0 rounded-md text-[10px] font-bold transition-transform active:scale-90 " +
         (reserved
           ? "cursor-not-allowed bg-muted text-muted-foreground opacity-40"
           : selected
