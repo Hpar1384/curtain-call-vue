@@ -30,6 +30,11 @@ export type SeatDTO = {
   number: number;
   /** per-seat override; null → show price */
   price: number | null;
+  section: "main" | "balcony";
+  zone: "standard" | "vip" | "economy";
+  aisleAfter: boolean;
+  /** hall-level: render rows on an arc */
+  curved: boolean;
   status: "free" | "reserved";
 };
 
