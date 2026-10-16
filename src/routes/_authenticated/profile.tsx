@@ -1,19 +1,31 @@
 import type React from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { listMyBookings } from "@/lib/booking.functions";
 import { toPersianNumber } from "@/lib/shows";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/BottomNav";
+import { getMyProfile, updateMyProfile, type ProfileInput } from "@/modules/profile/profile.functions";
 
 const bookingsQueryOptions = queryOptions({
   queryKey: ["my-bookings"],
   queryFn: () => listMyBookings(),
 });
 
+const profileQueryOptions = queryOptions({
+  queryKey: ["my-profile"],
+  queryFn: () => getMyProfile(),
+});
+
 export const Route = createFileRoute("/_authenticated/profile")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(bookingsQueryOptions),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(bookingsQueryOptions),
+      context.queryClient.ensureQueryData(profileQueryOptions),
+    ]),
   errorComponent: ({ error }) => (
     <div role="alert" className="p-6 text-sm text-muted-foreground">
       خطا در دریافت پروفایل: {error.message}
@@ -79,11 +91,10 @@ function ProfileScreen() {
           <Stat label="بلیت‌ها" value={toPersianNumber(tickets)} />
         </div>
 
-        <Section title="اطلاعات شخصی">
-          <Field label="نام و نام خانوادگی" value="به‌زودی" />
+        <ProfileForm />
+
+        <Section title="حساب">
           <Field label="ایمیل" value={user?.email ?? "—"} ltr />
-          <Field label="شماره موبایل" value="به‌زودی" />
-          <Field label="تاریخ تولد" value="به‌زودی" />
         </Section>
 
         <Section title="Curtain Call">
