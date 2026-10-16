@@ -78,6 +78,13 @@
       "when": 1792143535324,
       "tag": "0010_0010_seat_layout_zones",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792144016291,
+      "tag": "0011_0011_server_verified_payments",
+      "breakpoints": true
     }
   ]
 }

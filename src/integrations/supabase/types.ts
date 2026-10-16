@@ -226,36 +226,51 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          authority: string | null
           booking_id: string
           created_at: string
+          gateway_ref: string | null
           id: string
+          mode: string
+          needs_refund: boolean
           provider: string
           reference: string
           status: string
           updated_at: string
           user_id: string
+          verified_at: string | null
         }
         Insert: {
           amount?: number
+          authority?: string | null
           booking_id: string
           created_at?: string
+          gateway_ref?: string | null
           id?: string
+          mode?: string
+          needs_refund?: boolean
           provider?: string
           reference?: string
           status?: string
           updated_at?: string
           user_id: string
+          verified_at?: string | null
         }
         Update: {
           amount?: number
+          authority?: string | null
           booking_id?: string
           created_at?: string
+          gateway_ref?: string | null
           id?: string
+          mode?: string
+          needs_refund?: boolean
           provider?: string
           reference?: string
           status?: string
           updated_at?: string
           user_id?: string
+          verified_at?: string | null
         }
         Relationships: [
           {
@@ -605,6 +620,10 @@ export type Database = {
       admin_reprice_hall: { Args: { p_hall_id: string }; Returns: number }
       admin_session_overview: { Args: never; Returns: Json }
       admin_stats: { Args: never; Returns: Json }
+      attach_payment_authority: {
+        Args: { p_authority: string; p_payment_id: string }
+        Returns: undefined
+      }
       can_checkin: { Args: { _user_id: string }; Returns: boolean }
       cancel_ticket: { Args: { p_ticket_id: string }; Returns: undefined }
       checkin_ticket: {
@@ -616,6 +635,10 @@ export type Database = {
         Returns: string
       }
       expire_stale_bookings: { Args: never; Returns: number }
+      finalize_payment: {
+        Args: { p_gateway_ref: string; p_outcome: string; p_payment_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -632,6 +655,10 @@ export type Database = {
         Returns: undefined
       }
       staff_session_stats: { Args: { p_session_id: string }; Returns: Json }
+      start_payment: {
+        Args: { p_booking_id: string; p_mode: string; p_provider: string }
+        Returns: Json
+      }
       zone_price: {
         Args: { p_show_id: string; p_zone: string }
         Returns: number
