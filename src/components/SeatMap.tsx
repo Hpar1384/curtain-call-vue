@@ -42,7 +42,7 @@ export function SeatMap({
         <p className="mt-2 text-center text-[11px] font-bold tracking-widest text-muted-foreground">صحنه</p>
       </div>
 
-      <div className="overflow-x-auto pb-2" dir="ltr">
+      <div className="overflow-x-auto pb-2 pt-3" dir="ltr">
         <div
           className="mx-auto w-max origin-top space-y-5 px-2 transition-transform"
           style={{ transform: `scale(${zoom})`, marginBottom: `${(zoom - 1) * 100}%` }}
